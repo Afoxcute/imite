@@ -10,7 +10,15 @@ if (!vars.has("DEPLOYER_PRIVATE_KEY")) {
 const deployerPrivateKey = vars.get("DEPLOYER_PRIVATE_KEY");
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.24",
+  solidity: {
+    version: "0.8.24",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1, // Minimize bytecode size (Flow EVM has strict contract size limit)
+      },
+    },
+  },
 
   networks: {
     flowTestnet: {

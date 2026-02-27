@@ -14,8 +14,9 @@ const config_1 = require("./config");
 dotenv_1.default.config();
 // Use native FLOW token as WIP_TOKEN_ADDRESS
 exports.WIP_TOKEN_ADDRESS = config_1.NATIVE_TOKEN_ADDRESS;
-// Export contract addresses with appropriate defaults based on network
-exports.NFTContractAddress = process.env.NFT_CONTRACT_ADDRESS || viem_1.zeroAddress;
+// Export contract addresses with appropriate defaults based on network (Flow EVM Testnet)
+const DEFAULT_NFT_CONTRACT_ADDRESS = '0x44e670d21Fb5da3f87512222B8EDBFb7989477B6';
+exports.NFTContractAddress = process.env.NFT_CONTRACT_ADDRESS || DEFAULT_NFT_CONTRACT_ADDRESS;
 // Non-commercial social remixing terms
 exports.NonCommercialSocialRemixingTermsId = '1';
 exports.NonCommercialSocialRemixingTerms = {

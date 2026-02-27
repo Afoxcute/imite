@@ -8,7 +8,15 @@ if (!config_1.vars.has("DEPLOYER_PRIVATE_KEY")) {
 }
 const deployerPrivateKey = config_1.vars.get("DEPLOYER_PRIVATE_KEY");
 const config = {
-    solidity: "0.8.24",
+    solidity: {
+        version: "0.8.24",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 1,
+            },
+        },
+    },
     networks: {
         flowTestnet: {
             url: "https://testnet.evm.nodes.onflow.org",

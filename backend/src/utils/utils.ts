@@ -8,8 +8,10 @@ dotenv.config()
 export const WIP_TOKEN_ADDRESS: Address = NATIVE_TOKEN_ADDRESS
 
 // Export contract addresses with appropriate defaults based on network
+// Default: ModredIP on Flow EVM Testnet (chain 545)
+const DEFAULT_NFT_CONTRACT_ADDRESS = '0x44e670d21Fb5da3f87512222B8EDBFb7989477B6' as Address
 export const NFTContractAddress: Address =
-    (process.env.NFT_CONTRACT_ADDRESS as Address) || zeroAddress
+    (process.env.NFT_CONTRACT_ADDRESS as Address) || DEFAULT_NFT_CONTRACT_ADDRESS
 
 // License terms for Flow EVM IP management
 export interface LicenseTerms {
