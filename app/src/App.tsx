@@ -1650,7 +1650,7 @@ export default function App({ thirdwebClient }: AppProps) {
       // Show success notification
       if (result.testing) {
         notifySuccess('IP Asset Metadata Created (Testing Mode)', 
-          `IPFS upload successful!\nIP Hash: ${result.mantle.ipHash}\n\nNote: Contract registration was skipped (testing mode).`
+          `IPFS upload successful!\nIP Hash: ${result.flow.ipHash}\n\nNote: Contract registration was skipped (testing mode).`
         );
       } else if (result.warning) {
         // Handle case where transaction was submitted but hash couldn't be retrieved
@@ -1659,11 +1659,11 @@ export default function App({ thirdwebClient }: AppProps) {
         );
       } else {
       notifySuccess('IP Asset Registered', 
-        `Successfully registered IP asset!\nTransaction: ${result.mantle.txHash}\nIP Asset ID: ${result.mantle.ipAssetId}`,
+        `Successfully registered IP asset!\nTransaction: ${result.flow.txHash}\nIP Asset ID: ${result.flow.ipAssetId}`,
         {
           action: {
             label: 'View Transaction',
-            onClick: () => window.open(`https://evm-testnet.flowscan.io/tx/${result.mantle.txHash}`, '_blank')
+            onClick: () => window.open(`https://evm-testnet.flowscan.io/tx/${result.flow.txHash}`, '_blank')
           }
         }
       );
@@ -2961,7 +2961,7 @@ export default function App({ thirdwebClient }: AppProps) {
                     <div className="stat-label">IP accounts</div>
                   </div>
                   <div className="stat">
-                    <div className="stat-value">Mantle</div>
+                    <div className="stat-value">Flow</div>
                     <div className="stat-label">Network</div>
                   </div>
                 </div>
@@ -3088,7 +3088,7 @@ export default function App({ thirdwebClient }: AppProps) {
           </section>
 
           <footer className="landing-footer">
-            <p>Built on Mantle • Powered by ERC-6551 token-bound accounts</p>
+            <p>Built on Flow • Powered by ERC-6551 token-bound accounts</p>
           </footer>
         </main>
       </div>

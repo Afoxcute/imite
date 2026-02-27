@@ -25,11 +25,11 @@ The application is currently using the V2 contract:
    DEPLOYER_PRIVATE_KEY=your_private_key_here
    ```
 
-### Deploy to Mantle Sepolia Testnet
+### Deploy to Flow EVM Testnet
 
 1. **Deploy using Hardhat Ignition:**
    ```bash
-   npx hardhat ignition deploy ignition/modules/Sear.ts --network mantleTestnet
+   npx hardhat ignition deploy ignition/modules/ModredIP.ts --network flowTestnet
    ```
 
 2. **After deployment**, update `app/src/deployed_addresses.json`:
@@ -44,12 +44,12 @@ The application is currently using the V2 contract:
 
 3. **Verify the contract** (optional):
    ```bash
-   npx hardhat verify --network mantleTestnet DEPLOYED_ADDRESS "REGISTRY_ADDRESS" "ACCOUNT_IMPL_ADDRESS" 5003 "PLATFORM_FEE_COLLECTOR"
+   npx hardhat verify --network flowTestnet DEPLOYED_ADDRESS "REGISTRY_ADDRESS" "ACCOUNT_IMPL_ADDRESS" 545 "PLATFORM_FEE_COLLECTOR"
    ```
 
 ### Deployment Steps
 
-1. Make sure you have MNT tokens in your deployer wallet for gas fees
+1. Make sure you have FLOW tokens in your deployer wallet for gas fees
 2. Run the deployment command above
 3. Copy the deployed contract address from the output
 4. Update `deployed_addresses.json` with the new address
@@ -73,7 +73,7 @@ If you just want to test IPFS uploads without contract registration:
 
 To check if a contract has the `registerIP` function:
 
-1. Visit: https://explorer.testnet.mantle.xyz/address/CONTRACT_ADDRESS
+1. Visit: https://evm-testnet.flowscan.io/address/CONTRACT_ADDRESS
 2. Go to the "Contract" tab
 3. Check the "Read Contract" or "Write Contract" section
 4. Look for `registerIP` function

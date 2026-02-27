@@ -5,14 +5,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Mantle](https://img.shields.io/badge/Mantle-000000?style=flat&logo=ethereum&logoColor=white)](https://mantle.xyz/)
+[![Flow](https://img.shields.io/badge/Flow-000000?style=flat&logo=ethereum&logoColor=white)](https://flow.com/)
 
 ---
 
 ## Project Details
 
 **Project Description**  
-Sear is a decentralized intellectual property (IP) management platform built on Mantle. Creators can register IP assets as token-bound accounts (ERC-6551), mint licenses with programmable terms and royalties, receive and distribute revenue on-chain, and resolve disputes through an arbitration system. The platform uses IPFS for storage, integrates AI-powered infringement detection, and offers transfer and gifting of IP assets with full on-chain provenance. Built for the creator economy, Sear unifies registration, licensing, monetization, and protection in one dashboard with verifiable, transparent records.
+Sear is a decentralized intellectual property (IP) management platform built on Flow. Creators can register IP assets as token-bound accounts (ERC-6551), mint licenses with programmable terms and royalties, receive and distribute revenue on-chain, and resolve disputes through an arbitration system. The platform uses IPFS for storage, integrates AI-powered infringement detection, and offers transfer and gifting of IP assets with full on-chain provenance. Built for the creator economy, Sear unifies registration, licensing, monetization, and protection in one dashboard with verifiable, transparent records.
 
 **Hackathon track:** Legacy Builders
 
@@ -21,10 +21,10 @@ Sear is a decentralized intellectual property (IP) management platform built on 
 **Tech stack**
 - **Frontend:** React 18, TypeScript, Vite, Thirdweb SDK, custom CSS (glassmorphism), React Context API
 - **Backend:** Node.js, TypeScript, Express.js
-- **Blockchain & contracts:** Solidity, Viem, Mantle (Sepolia Testnet), Hardhat, Hardhat Ignition; ERC-6551 token-bound accounts (ERC6551Registry, ERC6551Account)
+- **Blockchain & contracts:** Solidity, Viem, Flow (EVM Testnet), Hardhat, Hardhat Ignition; ERC-6551 token-bound accounts (ERC6551Registry, ERC6551Account)
 - **Storage:** IPFS, Pinata
 - **Services:** Yakoa (AI-powered infringement detection)
-- **Infrastructure:** Mantle RPC, Pinata IPFS pinning
+- **Infrastructure:** Flow EVM RPC, Pinata IPFS pinning
 
 ---
 
@@ -118,18 +118,18 @@ Sear addresses critical pain points in the current IP management landscape:
 ### Backend
 - **Runtime**: Node.js + TypeScript
 - **Framework**: Express.js
-- **Blockchain**: Viem for Mantle integration
+- **Blockchain**: Viem for Flow integration
 - **Storage**: IPFS (Pinata) for decentralized storage
 - **AI Integration**: Yakoa for infringement detection
 
 ### Smart Contracts
-- **Platform**: Solidity on Mantle
+- **Platform**: Solidity on Flow EVM
 - **Core**: ERC-6551 token-bound accounts
 - **Registry**: ERC6551Registry for account management
 - **Account**: ERC6551Account for programmable logic
 
 ### Infrastructure
-- **Blockchain**: Mantle Sepolia Testnet (Chain ID: 5003)
+- **Blockchain**: Flow EVM Testnet (Chain ID: 545)
 - **Storage**: IPFS for censorship-resistant content
 - **Monitoring**: Yakoa API for infringement detection
 - **Deployment**: Hardhat Ignition for contract deployment
@@ -399,7 +399,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Mantle Team**: For blockchain infrastructure support
+- **Flow Team**: For blockchain infrastructure support
 - **Yakoa Team**: For AI-powered infringement detection
 - **IPFS Team**: For decentralized storage solutions
 - **Open Source Community**: For invaluable contributions

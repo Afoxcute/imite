@@ -1,6 +1,6 @@
 # Sear Frontend
 
-A React-based frontend for the Sear intellectual property management system on Mantle.
+A React-based frontend for the Sear intellectual property management system on Flow.
 
 ## Features
 
@@ -51,7 +51,7 @@ A React-based frontend for the Sear intellectual property management system on M
 - **Instant Alerts**: Receive notifications when new infringements are detected
 
 ### 6. Arbitration System
-- **Register as Arbitrator**: Stake MNT to become an arbitrator
+- **Register as Arbitrator**: Stake FLOW to become an arbitrator
 - **Unstake**: Withdraw stake when no active disputes assigned
 - **Submit Decisions**: Vote on disputes (uphold or reject)
 - **Auto-Resolution**: Disputes resolve automatically when majority is clear
@@ -102,7 +102,7 @@ A React-based frontend for the Sear intellectual property management system on M
 
 ### Paying Revenue
 1. Select the target IP Asset
-2. Enter the payment amount in MNT
+2. Enter the payment amount in FLOW
 3. **View Royalty Breakdown**: The system automatically calculates and displays:
    - Platform fee (2.5%)
    - Each license holder's share based on their royalty percentage
@@ -117,7 +117,7 @@ A React-based frontend for the Sear intellectual property management system on M
 3. The system displays:
    - Your accumulated royalties (if any)
    - Your active licenses and their royalty rates
-   - Claimable amount in MNT
+   - Claimable amount in FLOW
 4. Click "Claim Royalties" (enabled only if you have claimable royalties)
 5. Confirm the transaction to receive your accumulated royalties
 
@@ -140,7 +140,7 @@ A React-based frontend for the Sear intellectual property management system on M
 
 ## Technical Details
 
-- **Blockchain**: Mantle Sepolia Testnet (Chain ID: 5003)
+- **Blockchain**: Flow EVM Testnet (Chain ID: 545)
 - **Smart Contract**: Sear.sol
 - **Wallet Integration**: Thirdweb SDK
 - **IPFS**: Used for storing IP content, metadata, and license terms

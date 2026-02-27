@@ -56,11 +56,11 @@ export const NonCommercialSocialRemixingTerms: LicenseTerms = {
     uri: 'https://github.com/piplabs/pil-document/blob/998c13e6ee1d04eb817aefd1fe16dfe8be3cd7a2/off-chain-terms/NCSR.json',
 }
 
-// Royalty policy addresses for Mantle
+// Royalty policy addresses for Flow
 export const RoyaltyPolicyLAP: Address = '0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E'
 export const RoyaltyPolicyLRP: Address = '0x9156e603C949481883B1d3355c6f1132D191fC41'
 
-// Commercial remix terms for Mantle
+// Commercial remix terms for Flow
 export function createCommercialRemixTerms(terms: { commercialRevShare: number; defaultMintingFee: number }): LicenseTerms {
     return {
         transferable: true,
@@ -83,7 +83,7 @@ export function createCommercialRemixTerms(terms: { commercialRevShare: number; 
     }
 }
 
-// Licensing configuration for Mantle
+// Licensing configuration for Flow
 export interface LicensingConfig {
     mintingFee: bigint
     isSet: boolean
@@ -111,11 +111,11 @@ export function convertRoyaltyPercentToTokens(royaltyPercent: number): number {
     return royaltyPercent * 1_000_000
 }
 
-// Mantle-specific utility functions
-export function getMantleExplorerUrl(txHash: string): string {
+// Flow-specific utility functions
+export function getFlowExplorerUrl(txHash: string): string {
     return `${networkInfo.blockExplorer}/tx/${txHash}`
 }
 
-export function getMantleAddressExplorerUrl(address: string): string {
+export function getFlowAddressExplorerUrl(address: string): string {
     return `${networkInfo.blockExplorer}/address/${address}`
 }

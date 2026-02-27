@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { registerIpWithMantle } from '../services/storyService';
+import { registerIpWithFlow } from '../services/storyService';
 import { registerToYakoa } from '../services/yakoascanner';
 import { Address } from 'viem';
 import { convertBigIntsToStrings } from '../utils/bigIntSerializer';
@@ -24,7 +24,7 @@ const handleRegistration = async (req: Request, res: Response) => {
       console.log("⚠️ Skipping contract call (testing mode)");
       const responseData = {
         message: 'IP Asset metadata prepared successfully (contract call skipped - testing mode)',
-        mantle: {
+        flow: {
           txHash: null,
           ipAssetId: null,
           explorerUrl: null,
@@ -47,19 +47,19 @@ const handleRegistration = async (req: Request, res: Response) => {
       });
     }
 
-    // 1. Register on Mantle using Sear contract
+    // 1. Register on Flow using ModredIP contract
     let txHash: string | null = null;
     let ipAssetId: number | undefined = undefined;
     let blockNumber: bigint | null = null;
     let explorerUrl: string | null = null;
 
     try {
-      const result = await registerIpWithMantle(ipHash, metadata, isEncrypted, contractAddress as Address);
+      const result = await registerIpWithFlow(ipHash, metadata, isEncrypted, contractAddress as Address);
       txHash = result.txHash;
       ipAssetId = result.ipAssetId;
       blockNumber = result.blockNumber;
       explorerUrl = result.explorerUrl;
-      console.log("✅ Mantle registration successful:", {
+      console.log("✅ Flow registration successful:", {
         txHash,
         ipAssetId,
         blockNumber,
@@ -97,7 +97,7 @@ const handleRegistration = async (req: Request, res: Response) => {
         console.log("✅ Assuming transaction succeeded (already known error). Returning success response.");
         return res.status(200).json(convertBigIntsToStrings({
           message: 'IP Asset registration submitted successfully (transaction was already known)',
-          mantle: {
+          flow: {
             txHash: null,
             ipAssetId: null,
             blockNumber: null,
@@ -226,12 +226,12 @@ const yakoaResponse = await registerToYakoa({
 
       // Determine success message based on Yakoa response
       const successMessage = yakoaResponse.alreadyRegistered 
-        ? 'IP Asset registered on Mantle, already exists in Yakoa'
-        : 'IP Asset successfully registered on Mantle and Yakoa';
+        ? 'IP Asset registered on Flow, already exists in Yakoa'
+        : 'IP Asset successfully registered on Flow and Yakoa';
 
       const responseData = {
         message: successMessage,
-        mantle: {
+        flow: {
         txHash,
           ipAssetId,
         explorerUrl,
@@ -245,7 +245,7 @@ const yakoaResponse = await registerToYakoa({
     } else {
       const responseData = {
         message: 'Registration successful (IP Asset ID not extracted)',
-        mantle: {
+        flow: {
           txHash,
           ipAssetId: null,
           explorerUrl,

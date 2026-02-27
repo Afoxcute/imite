@@ -1,10 +1,10 @@
-# Mantle IP Management Backend
+# Flow IP Management Backend
 
-This backend service provides IP (Intellectual Property) management functionality on the Mantle testnet using the Sear smart contract.
+This backend service provides IP (Intellectual Property) management functionality on the Flow EVM testnet using the ModredIP smart contract.
 
 ## Features
 
-- **IP Registration**: Register IP assets on Mantle testnet using Sear contract
+- **IP Registration**: Register IP assets on Flow EVM testnet using ModredIP contract
 - **License Minting**: Mint licenses for IP assets with customizable terms
 - **License Validation**: Enforces one license per IP asset (prevents duplicate licenses)
 - **IPFS Integration**: Upload metadata to IPFS for decentralized storage
@@ -18,7 +18,7 @@ Create a `.env` file in the backend directory:
 
 ```env
 WALLET_PRIVATE_KEY=your_private_key_here
-RPC_PROVIDER_URL=https://rpc.sepolia.mantle.xyz
+RPC_PROVIDER_URL=https://testnet.evm.nodes.onflow.org
 NFT_CONTRACT_ADDRESS=optional_nft_contract_address
 ```
 
@@ -58,15 +58,15 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
 
 ## Network Configuration
 
-- **Network**: Mantle Sepolia Testnet
-- **Chain ID**: 5003
-- **RPC URL**: https://rpc.sepolia.mantle.xyz
-- **Explorer**: https://explorer.testnet.mantle.xyz
-- **Native Token**: MNT (used as WIP_TOKEN_ADDRESS)
+- **Network**: Flow EVM Testnet
+- **Chain ID**: 545
+- **RPC URL**: https://testnet.evm.nodes.onflow.org
+- **Explorer**: https://evm-testnet.flowscan.io
+- **Native Token**: FLOW (used as WIP_TOKEN_ADDRESS)
 
 ## Smart Contracts
 
-- **Sear**: Main contract for IP registration and license management
+- **ModredIP**: Main contract for IP registration and license management
 - **ERC6551Registry**: Token-bound account registry
 - **ERC6551Account**: Token-bound account implementation
 
@@ -97,9 +97,9 @@ The backend includes automatic retry logic for blockchain transactions:
 
 ## Key Features
 
-1. **Network**: Mantle Sepolia Testnet (Chain ID: 5003)
-2. **Token**: Using native MNT token for transactions
-3. **Contracts**: Sear contract for IP management
+1. **Network**: Flow EVM Testnet (Chain ID: 545)
+2. **Token**: Using native FLOW token for transactions
+3. **Contracts**: ModredIP contract for IP management
 4. **License Validation**: Enforces one license per IP asset
 5. **Transaction Reliability**: Automatic retry with nonce management
 6. **Error Handling**: Comprehensive error messages and recovery
