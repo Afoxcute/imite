@@ -17,17 +17,53 @@ import {
 } from "thirdweb";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
-import { parseEther, formatEther } from "viem";
+import { parseEther, formatEther, keccak256, toBytes } from "viem";
 import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";
+import { decryptMetadata, encryptMetadata, isEncryptedPayload } from "./utils/confidential";
 
-// Type assertion to include the ModredIP contract address
+// Type assertion to include the ModredIP and ConfidentialIPAsset contract addresses
 type ContractAddresses = {
   "ModredIPModule#ERC6551Account": string;
   "ModredIPModule#ERC6551Registry": string;
   "ModredIPModule#ModredIP": string;
+  "ConfidentialIPAssetModule#ConfidentialIPAsset": string;
 };
 
 const CONTRACT_ADDRESSES = CONTRACT_ADDRESS_JSON as ContractAddresses;
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const CONFIDENTIAL_IP_ASSET_ABI = [
+  {
+    inputs: [
+      { name: "encryptedMetadata_", type: "bytes" },
+      { name: "ipHashCommitment_", type: "bytes32" }
+    ],
+    name: "registerIPConfidential",
+    outputs: [{ name: "tokenId", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "nextTokenId",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [{ name: "", type: "uint256" }],
+    name: "confidentialIPs",
+    outputs: [
+      { name: "tokenId", type: "uint256" },
+      { name: "owner", type: "address" },
+      { name: "encryptedMetadata", type: "bytes" },
+      { name: "ipHashCommitment", type: "bytes32" },
+      { name: "exists", type: "bool" }
+    ],
+    stateMutability: "view",
+    type: "function"
+  }
+] as const;
 
 // Flow EVM Testnet chain definition
 const flowTestnet = {
@@ -946,14 +982,21 @@ export default function App({ thirdwebClient }: AppProps) {
   
   // Parsed metadata state
   const [parsedMetadata, setParsedMetadata] = useState<Map<number, any>>(new Map());
-  
+
+  // Confidential IP assets (from ConfidentialIPAsset contract when deployed)
+  const [confidentialAssets, setConfidentialAssets] = useState<Map<number, { tokenId: number; owner: string }>>(new Map());
+
   // Form states
   const [ipFile, setIpFile] = useState<File | null>(null);
   const [ipHash, setIpHash] = useState<string>("");
   const [ipName, setIpName] = useState<string>("");
   const [ipDescription, setIpDescription] = useState<string>("");
   const [isEncrypted, setIsEncrypted] = useState<boolean>(false);
-  
+  const [encryptionPassword, setEncryptionPassword] = useState<string>("");
+  // Decrypted content per token (session-only; used when user enters password for encrypted IP)
+  const [decryptedMetadata, setDecryptedMetadata] = useState<Map<number, { name: string; description: string }>>(new Map());
+  const [decryptingTokenId, setDecryptingTokenId] = useState<number | null>(null);
+
   const [selectedTokenId, setSelectedTokenId] = useState<number>(1);
   const [royaltyPercentage, setRoyaltyPercentage] = useState<number>(10);
   const [licenseDuration, setLicenseDuration] = useState<number>(86400);
@@ -1446,12 +1489,21 @@ export default function App({ thirdwebClient }: AppProps) {
       }
       setIpAssets(newIpAssets);
 
-      // Parse metadata for all IP assets
+      // Parse metadata for all IP assets (decrypt when encrypted via Zama/confidential flow)
       const newParsedMetadata = new Map<number, any>();
       for (const [id, asset] of newIpAssets.entries()) {
         try {
-          const metadata = await parseMetadata(asset.metadata);
-          newParsedMetadata.set(id, metadata);
+          if (asset.isEncrypted && isEncryptedPayload(asset.metadata)) {
+            newParsedMetadata.set(id, {
+              name: "🔒 Encrypted",
+              description: "Confidential IP asset. Decrypt with your password to view.",
+              _encrypted: true,
+              _ciphertext: asset.metadata
+            });
+          } else {
+            const metadata = await parseMetadata(asset.metadata);
+            newParsedMetadata.set(id, metadata);
+          }
         } catch (error) {
           console.error(`Error parsing metadata for token ${id}:`, error);
           newParsedMetadata.set(id, {
@@ -1461,6 +1513,39 @@ export default function App({ thirdwebClient }: AppProps) {
         }
       }
       setParsedMetadata(newParsedMetadata);
+
+      // Load confidential IP assets (if ConfidentialIPAsset contract is deployed)
+      const confAddress = CONTRACT_ADDRESSES["ConfidentialIPAssetModule#ConfidentialIPAsset"];
+      if (confAddress && confAddress !== ZERO_ADDRESS) {
+        try {
+          const confContract = getContract({
+            client: thirdwebClient,
+            chain: defineChain(flowTestnet.id),
+            address: confAddress,
+            abi: CONFIDENTIAL_IP_ASSET_ABI
+          });
+          const confNextId = await readContract({ contract: confContract, method: "nextTokenId", params: [] });
+          const confAssets = new Map<number, { tokenId: number; owner: string }>();
+          for (let i = 1; i < Number(confNextId); i++) {
+            try {
+              const row = await readContract({
+                contract: confContract,
+                method: "confidentialIPs",
+                params: [BigInt(i)]
+              });
+              if (row[4]) confAssets.set(i, { tokenId: i, owner: row[1] });
+            } catch {
+              // skip
+            }
+          }
+          setConfidentialAssets(confAssets);
+        } catch (e) {
+          console.warn("Could not load confidential assets:", e);
+          setConfidentialAssets(new Map());
+        }
+      } else {
+        setConfidentialAssets(new Map());
+      }
 
       // Load licenses
       const newLicenses = new Map<number, License>();
@@ -1586,6 +1671,26 @@ export default function App({ thirdwebClient }: AppProps) {
         original_filename: ipFile?.name || 'unknown'
       };
 
+      // Zama/OpenZeppelin confidential: encrypt metadata when "Encrypted Content" is checked
+      let metadataToSend: string;
+      if (isEncrypted) {
+        const password = encryptionPassword.trim() || window.prompt("Enter a password to encrypt this IP asset (you'll need it to decrypt later):");
+        if (!password) {
+          notifyError("Encryption required", "Please enter an encryption password for confidential IP assets.");
+          setLoading(false);
+          return;
+        }
+        try {
+          metadataToSend = await encryptMetadata(JSON.stringify(ipMetadata), password);
+        } catch (err) {
+          notifyError("Encryption failed", err instanceof Error ? err.message : "Could not encrypt metadata.");
+          setLoading(false);
+          return;
+        }
+      } else {
+        metadataToSend = JSON.stringify(ipMetadata);
+      }
+
       // Prepare NFT metadata for backend
       // const nftMetadata = {
       //   name: ipName,
@@ -1616,7 +1721,7 @@ export default function App({ thirdwebClient }: AppProps) {
         },
         body: JSON.stringify({
           ipHash: ipHash,
-          metadata: JSON.stringify(ipMetadata),
+          metadata: metadataToSend,
           isEncrypted: isEncrypted,
           searContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
           skipContractCall: false // V2 contract has registerIP function, so this should be false
@@ -1667,6 +1772,70 @@ export default function App({ thirdwebClient }: AppProps) {
           }
         }
       );
+      }
+
+      // When encrypted, also register on ConfidentialIPAsset contract if deployed
+      const confidentialAddress = CONTRACT_ADDRESSES["ConfidentialIPAssetModule#ConfidentialIPAsset"];
+      if (isEncrypted && account && confidentialAddress && confidentialAddress !== ZERO_ADDRESS) {
+        const runConfidentialRegistration = async (): Promise<void> => {
+          const base64ToHex = (b64: string): `0x${string}` => {
+            const binary = atob(b64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return ("0x" + Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("")) as `0x${string}`;
+          };
+          const encryptedBytes = base64ToHex(metadataToSend);
+          const commitment = keccak256(toBytes(ipHash));
+          const confidentialContract = getContract({
+            client: thirdwebClient,
+            chain: defineChain(flowTestnet.id),
+            address: confidentialAddress,
+            abi: CONFIDENTIAL_IP_ASSET_ABI
+          });
+          const tx = prepareContractCall({
+            contract: confidentialContract,
+            method: "registerIPConfidential",
+            params: [encryptedBytes, commitment]
+          });
+          const confTx = await sendTransaction({ transaction: tx, account });
+          await waitForReceipt({ client: thirdwebClient, chain: defineChain(flowTestnet.id), transactionHash: confTx.transactionHash });
+          notifySuccess("Also registered on confidential contract", `Confidential IP Asset stored on-chain. Token recorded on ConfidentialIPAsset.`);
+        };
+        const isRateLimitError = (err: unknown) =>
+          (err && typeof err === "object" && "code" in err && (err as { code?: number }).code === -32603) ||
+          (err instanceof Error && /rate limit/i.test(err.message));
+        const delaysMs = [8000, 20000, 45000]; // Wait before 1st attempt, then before 2nd and 3rd retries
+        let lastErr: unknown = null;
+        try {
+          for (let attempt = 0; attempt <= 2; attempt++) {
+            const waitMs = delaysMs[attempt] ?? 45000;
+            if (waitMs > 0) {
+              notifySuccess(attempt === 0 ? "Main registration done" : "Retrying confidential", `Waiting ${waitMs / 1000}s before ${attempt === 0 ? "confidential" : "next"} registration (avoiding rate limit)...`);
+              await new Promise((r) => setTimeout(r, waitMs));
+            }
+            try {
+              await runConfidentialRegistration();
+              lastErr = null;
+              break;
+            } catch (err) {
+              lastErr = err;
+              if (!isRateLimitError(err) || attempt === 2) break;
+              console.warn(`Confidential registration rate limited, retry ${attempt + 1}/2 in ${(delaysMs[attempt + 1] ?? 45000) / 1000}s`);
+            }
+          }
+          if (lastErr) {
+            console.error("Confidential contract registration failed:", lastErr);
+            notifyError(
+              "Confidential registration failed",
+              isRateLimitError(lastErr)
+                ? "RPC rate limited. Main registration succeeded. Try again in a few minutes or use a different RPC for Flow Testnet in MetaMask."
+                : lastErr instanceof Error ? lastErr.message : "Could not register on confidential contract. Main registration succeeded."
+            );
+          }
+        } catch (confErr) {
+          console.error("Confidential contract registration failed:", confErr);
+          notifyError("Confidential registration failed", confErr instanceof Error ? confErr.message : "Could not register on confidential contract. Main registration succeeded.");
+        }
       }
 
       // Reset form
@@ -3186,6 +3355,11 @@ export default function App({ thirdwebClient }: AppProps) {
                 <div className="section-header">
                   <span className="section-icon">📝</span>
                   <h2 className="section-title">Register IP Asset</h2>
+                        {CONTRACT_ADDRESSES["ConfidentialIPAssetModule#ConfidentialIPAsset"] !== ZERO_ADDRESS && (
+                          <p className="section-subtitle" style={{ marginTop: 4 }}>
+                            🔒 Confidential contract active — {confidentialAssets.size} confidential asset{confidentialAssets.size !== 1 ? "s" : ""} registered
+                          </p>
+                        )}
                       </div>
           
           <div className="form-grid">
@@ -3303,6 +3477,16 @@ export default function App({ thirdwebClient }: AppProps) {
                   />
                   <label className="checkbox-label">Encrypted Content</label>
                 </div>
+                {isEncrypted && (
+                  <input
+                    type="password"
+                    className="form-input"
+                    value={encryptionPassword}
+                    onChange={(e) => setEncryptionPassword(e.target.value)}
+                    placeholder="Encryption password (or enter when prompted)"
+                    style={{ marginTop: "8px" }}
+                  />
+                )}
               </div>
             </div>
 

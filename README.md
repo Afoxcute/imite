@@ -134,6 +134,11 @@ Sear addresses critical pain points in the current IP management landscape:
 - **Monitoring**: Yakoa API for infringement detection
 - **Deployment**: Hardhat Ignition for contract deployment
 
+### Confidential IP & Transactions (Zama / OpenZeppelin)
+- **Client-side encryption**: When "Encrypted Content" is checked, IP metadata is encrypted (AES-GCM) before being sent to the contract; only holders of the password can decrypt. Works on any chain (including Flow EVM).
+- **Confidential contract**: `contracts/ConfidentialIPAsset.sol` supports encrypted metadata storage and optional FHE revenue (euint64) for deployment on an **fhEVM-enabled network** (e.g. Zama gateway + Ethereum Sepolia). Requires `@fhevm/solidity` and `@openzeppelin/confidential-contracts`; see [Zama fhEVM](https://docs.zama.ai/fhevm) and [OpenZeppelin Confidential Contracts](https://docs.openzeppelin.com/confidential-contracts).
+- **Dependencies**: `@fhevm/solidity`, `@openzeppelin/confidential-contracts` are included; use the fhEVM Hardhat template or Zama relayer for full confidential deployment.
+
 ---
 
 ## 🚀 Key Features
@@ -141,7 +146,7 @@ Sear addresses critical pain points in the current IP management landscape:
 ### ✅ IP Asset Registration
 - **NFT Minting**: Convert IP into tradeable assets
 - **Metadata Storage**: Decentralized IPFS storage
-- **Encryption Support**: Optional content protection
+- **Encryption Support**: Optional content protection via Zama/OpenZeppelin confidential flow (client-side AES-GCM encryption of metadata; optional fhEVM deployment for confidential transactions)
 - **Drag-and-Drop Interface**: User-friendly file upload
 
 ### ✅ License Management

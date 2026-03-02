@@ -26,6 +26,12 @@ const config: HardhatUserConfig = {
       accounts: [deployerPrivateKey],
       timeout: 120000, // 120 seconds
     },
+    // Zama fhEVM (confidential contracts) – requires fhEVM gateway/relayer
+    fhevmSepolia: {
+      url: process.env.FHEVM_RPC_URL || "https://eth-sepolia.public.blastapi.io",
+      accounts: [deployerPrivateKey],
+      timeout: 120000,
+    },
   },
   etherscan: {
     apiKey: {
