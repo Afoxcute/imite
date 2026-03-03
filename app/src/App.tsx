@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useNotificationHelpers } from "./contexts/NotificationContext";
 import { NotificationButton } from "./components/NotificationButton";
@@ -997,6 +997,16 @@ export default function App({ thirdwebClient }: AppProps) {
   const [decryptedMetadata, setDecryptedMetadata] = useState<Map<number, { name: string; description: string }>>(new Map());
   const [decryptingTokenId, setDecryptingTokenId] = useState<number | null>(null);
 
+  // Merged metadata for display (decrypted overrides when available); must be top-level hook
+  const displayMetadata = useMemo(() => {
+    const out = new Map<number, any>();
+    parsedMetadata.forEach((v, id) => {
+      const dec = decryptedMetadata.get(id);
+      out.set(id, dec ? { ...v, name: dec.name, description: dec.description, _encrypted: false } : v);
+    });
+    return out;
+  }, [parsedMetadata, decryptedMetadata]);
+
   const [selectedTokenId, setSelectedTokenId] = useState<number>(1);
   const [royaltyPercentage, setRoyaltyPercentage] = useState<number>(10);
   const [licenseDuration, setLicenseDuration] = useState<number>(86400);
@@ -1489,7 +1499,7 @@ export default function App({ thirdwebClient }: AppProps) {
       }
       setIpAssets(newIpAssets);
 
-      // Parse metadata for all IP assets (decrypt when encrypted via Zama/confidential flow)
+      // Parse metadata for all IP assets (decrypt when encrypted)
       const newParsedMetadata = new Map<number, any>();
       for (const [id, asset] of newIpAssets.entries()) {
         try {
@@ -1595,6 +1605,31 @@ export default function App({ thirdwebClient }: AppProps) {
     loadContractData();
   }, [account?.address]);
 
+  // Decrypt an encrypted IP asset's metadata with the user's password
+  const handleDecryptAsset = async (tokenId: number, ciphertext: string) => {
+    const password = window.prompt("Enter the password used to encrypt this IP asset:");
+    if (!password) return;
+    setDecryptingTokenId(tokenId);
+    try {
+      const plaintext = await decryptMetadata(ciphertext, password);
+      const parsed = JSON.parse(plaintext) as { name?: string; description?: string };
+      setDecryptedMetadata((prev) => {
+        const next = new Map(prev);
+        next.set(tokenId, {
+          name: parsed.name ?? "Unnamed",
+          description: parsed.description ?? "No description"
+        });
+        return next;
+      });
+      notifySuccess("Decrypted", "IP asset content is now visible.");
+    } catch (e) {
+      console.error("Decrypt failed:", e);
+      notifyError("Decryption failed", e instanceof Error ? e.message : "Wrong password or invalid payload.");
+    } finally {
+      setDecryptingTokenId(null);
+    }
+  };
+
   // Create standardized NFT metadata
   const createNFTMetadata = async (ipHash: string, name: string, description: string, isEncrypted: boolean) => {
     // Generate metadata object
@@ -1671,7 +1706,7 @@ export default function App({ thirdwebClient }: AppProps) {
         original_filename: ipFile?.name || 'unknown'
       };
 
-      // Zama/OpenZeppelin confidential: encrypt metadata when "Encrypted Content" is checked
+      // Confidential: encrypt metadata when "Encrypted Content" is checked
       let metadataToSend: string;
       if (isEncrypted) {
         const password = encryptionPassword.trim() || window.prompt("Enter a password to encrypt this IP asset (you'll need it to decrypt later):");
@@ -3343,7 +3378,7 @@ export default function App({ thirdwebClient }: AppProps) {
               <IPPortfolio 
                 assets={ipAssets}
                 licenses={licenses}
-                metadata={parsedMetadata}
+                metadata={displayMetadata}
                 userAddress={account?.address}
                 onTransferIP={transferIP}
               />
@@ -4791,7 +4826,10 @@ export default function App({ thirdwebClient }: AppProps) {
           
           <div className="grid grid-3">
             {Array.from(ipAssets.entries()).map(([id, asset]) => {
-              const metadata = parsedMetadata.get(id) || { name: "Unknown", description: "No description available" };
+              const rawMetadata = parsedMetadata.get(id) || { name: "Unknown", description: "No description available" };
+              const decrypted = decryptedMetadata.get(id);
+              const metadata = decrypted ?? rawMetadata;
+              const isEncryptedPlaceholder = rawMetadata._encrypted === true && typeof rawMetadata._ciphertext === "string";
               const mediaUrl = getIPFSGatewayURL(asset.ipHash);
               
               return (
@@ -4850,7 +4888,22 @@ export default function App({ thirdwebClient }: AppProps) {
                     
                     <div className="card-field">
                       <span className="card-field-label">Description</span>
-                      <span className="card-field-value">{metadata.description || "No description"}</span>
+                      <span className="card-field-value">
+                        {isEncryptedPlaceholder && !decrypted
+                          ? "Confidential. Use your encryption password to view."
+                          : (metadata.description || "No description")}
+                      </span>
+                      {isEncryptedPlaceholder && !decrypted && (
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          style={{ marginTop: "0.5rem" }}
+                          disabled={decryptingTokenId === id}
+                          onClick={() => handleDecryptAsset(id, rawMetadata._ciphertext)}
+                        >
+                          {decryptingTokenId === id ? "Decrypting…" : "🔓 Decrypt to view"}
+                        </button>
+                      )}
                     </div>
                     
                     <div className="card-field">

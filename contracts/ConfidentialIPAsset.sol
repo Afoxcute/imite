@@ -3,17 +3,15 @@ pragma solidity ^0.8.24;
 
 /**
  * @title ConfidentialIPAsset
- * @dev Zama/OpenZeppelin confidential contract for encryption of IP assets and transactions.
- *      Deploy on an fhEVM-enabled network (e.g. Zama gateway + Ethereum Sepolia).
+ * @dev Confidential contract for encrypted IP asset metadata and revenue.
  *      - Encrypted metadata stored as ciphertext (bytes)
- *      - Confidential revenue amounts using FHE (euint64)
- * @notice Requires @fhevm/solidity and @openzeppelin/confidential-contracts. See README for fhEVM deployment.
+ *      - Optional confidential revenue (deploy FHE variant on supported networks for euint64)
  */
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-// FHEVM and Zama config - only compile when targeting fhEVM (use conditional compilation or separate Hardhat config)
-// Uncomment and add remappings for @fhevm/solidity and Zama network to deploy on fhEVM:
+// Optional FHE variant: only compile when targeting an FHE-enabled network (conditional compilation or separate Hardhat config).
+// Uncomment and add remappings for @fhevm/solidity to deploy FHE version:
 /*
 import { FHE, euint64 } from "@fhevm/solidity/lib/FHE.sol";
 import { ZamaEthereumConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
@@ -57,7 +55,7 @@ contract ConfidentialIPAsset is ZamaEthereumConfig, Ownable, ReentrancyGuard {
 }
 */
 
-// Placeholder when not compiling for fhEVM: same interface, no FHE (revert with clear message)
+// EVM placeholder: same interface, no FHE (plain bytes and uint256)
 contract ConfidentialIPAsset is Ownable, ReentrancyGuard {
     constructor() Ownable(msg.sender) {}
 

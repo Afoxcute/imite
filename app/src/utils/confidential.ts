@@ -1,5 +1,5 @@
 /**
- * Client-side encryption/decryption for IP assets (Zama/OpenZeppelin confidential integration).
+ * Client-side encryption/decryption for IP assets (confidential integration).
  * Uses Web Crypto API (AES-GCM) so metadata can be stored as ciphertext on any chain.
  * When isEncrypted is true, encrypt before sending to contract and decrypt when user has the key.
  */
