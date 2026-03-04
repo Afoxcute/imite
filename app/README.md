@@ -64,9 +64,10 @@ A React-based frontend for the imite intellectual property management system on 
    yarn install
    ```
 
-2. **Set Environment Variables**
-   - Get a Thirdweb Client ID from [thirdweb.com](https://thirdweb.com)
-   - Update `src/main.tsx` with your client ID
+2. **Set Environment Variables** (see `app/.env.example`)
+   - `VITE_API_URL` – backend API URL (default `http://localhost:5000`)
+   - Optional: `VITE_STORACHA_KEY`, `VITE_STORACHA_PROOF` for Storacha uploads (otherwise enter in UI)
+   - Thirdweb Client ID in `src/main.tsx` if needed
 
 3. **Start Development Server**
    ```bash
@@ -143,7 +144,7 @@ A React-based frontend for the imite intellectual property management system on 
 - **Blockchain**: Flow EVM Testnet (Chain ID: 545)
 - **Smart Contract**: ModredIP (IP module)
 - **Wallet Integration**: Thirdweb SDK
-- **IPFS**: Used for storing IP content, metadata, and license terms
+- **Storage**: IPFS via **Pinata** or **Storacha** (choose in UI; Storacha is client-side; credentials in `.env` or session)
 - **ERC-6551**: Token-bound accounts for IP management
 
 ## Contract Addresses

@@ -118,3 +118,10 @@ function unstake() public nonReentrant
 - ✅ Dispute Resolution with Arbitration System
 - ✅ Arbitrator Registration and Unstaking
 - ✅ Reputation System for Arbitrators
+
+## Troubleshooting
+
+- **"already known" error**: Usually a pending transaction with the same nonce. Wait for pending tx to confirm on [Flow EVM Explorer](https://evm-testnet.flowscan.io/address/YOUR_DEPLOYER_ADDRESS), then retry.
+- **Missing DEPLOYER_PRIVATE_KEY**: Set it in `.env` or in your shell before running the deploy command.
+- **Insufficient funds**: Ensure the deployer wallet has FLOW tokens for gas on Flow EVM Testnet.
+- **PowerShell**: You can use `.\deploy.ps1` from the repo root if available, or run the `npx hardhat ignition deploy ...` command directly.

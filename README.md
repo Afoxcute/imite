@@ -22,7 +22,7 @@ imite is a decentralized intellectual property (IP) management platform built on
 - **Frontend:** React 18, TypeScript, Vite, Thirdweb SDK, custom CSS (glassmorphism), React Context API
 - **Backend:** Node.js, TypeScript, Express.js
 - **Blockchain & contracts:** Solidity, Viem, Flow (EVM Testnet), Hardhat, Hardhat Ignition; ERC-6551 token-bound accounts (ERC6551Registry, ERC6551Account)
-- **Storage:** IPFS, Pinata
+- **Storage:** IPFS via **Pinata** or **Storacha** (client-side; choose in UI; Storacha default when credentials set)
 - **Services:** Yakoa (AI-powered infringement detection)
 - **Infrastructure:** Flow EVM RPC, Pinata IPFS pinning
 
@@ -130,7 +130,7 @@ imite addresses critical pain points in the current IP management landscape:
 
 ### Infrastructure
 - **Blockchain**: Flow EVM Testnet (Chain ID: 545)
-- **Storage**: IPFS (Pinata) or **Storacha** (optional decentralized hot storage on Filecoin). When the backend has `STORACHA_KEY` and `STORACHA_PROOF` set, the app can upload IP assets to Storacha and retrieve via [storacha.link](https://storacha.link). See [Storacha docs](https://docs.storacha.network/).
+- **Storage**: IPFS via **Pinata** or **Storacha**. The app uses a storage provider dropdown (Storacha default when configured). Storacha uploads run **client-side**: set `VITE_STORACHA_KEY` and `VITE_STORACHA_PROOF` in `app/.env` (see `app/.env.example`), or enter key and proof in the UI (saved for the session). Proof must include upload capabilities: `storacha delegation create <did> --base64 --can space/blob/add --can space/index/add --can filecoin/offer --can upload/add`. See [Storacha docs](https://docs.storacha.network/how-to/upload/).
 - **Monitoring**: Yakoa API for infringement detection
 - **Deployment**: Hardhat Ignition for contract deployment
 
@@ -383,14 +383,30 @@ The founders experienced firsthand the challenges of IP management:
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/imite.git
-
-# Install dependencies
 cd imite
-npm install
 
-# Start development server
-npm run dev
+# Backend (API + contract calls)
+cd backend
+cp .env.example .env   # set WALLET_PRIVATE_KEY, PINATA_JWT, etc.
+yarn install && yarn start   # runs on http://localhost:5000
+
+# Frontend (from repo root)
+cd ../app
+cp .env.example .env   # optional: VITE_API_URL, VITE_STORACHA_KEY, VITE_STORACHA_PROOF
+yarn install && yarn dev   # runs on http://localhost:5173
 ```
+
+- **Backend `.env`**: `WALLET_PRIVATE_KEY`, `PINATA_JWT` (required for register); see `backend/.env.example`.
+- **App `.env`**: `VITE_API_URL` (default `http://localhost:5000`); optional `VITE_STORACHA_KEY` and `VITE_STORACHA_PROOF` for Storacha uploads without entering credentials in the UI. See `app/.env.example`.
+
+### Contract deployment
+See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for deploying ModredIP to Flow EVM and updating `app/src/deployed_addresses.json`.
+
+### Recent updates
+- **Branding**: Application name is **imite** (contract key `ModredIPModule#ModredIP` kept for compatibility).
+- **Storacha**: Client-side only; credentials via `app/.env` (VITE_STORACHA_*) or in-app form; storage provider dropdown (Storacha / Pinata); metadata upload uses selected provider.
+- **API**: Backend expects `imiteContractAddress` in register and license payloads.
+- **UI**: Description field layout fixed for encrypted assets; image preview works for both encrypted and non-encrypted IP (with Pinata/Storacha gateway fallback).
 
 
 ---

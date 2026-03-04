@@ -1,5 +1,7 @@
 # Story TypeScript SDK Examples
 
+This file is reference material for the Story SDK. For **imite** backend setup and API, see [../README.md](../README.md) and the [project README](../../../README.md).
+
 ## Get Started
 
 1. Install the dependencies:

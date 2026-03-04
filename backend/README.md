@@ -37,7 +37,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
   }
   ```
 - **Response**: Returns transaction hash, IP asset ID, block number, and explorer URL
-- **Note**: Supports legacy `modredIpContractAddress` parameter for backward compatibility
+- **Note**: Use `imiteContractAddress` in the request body
 
 ### License Minting
 - **POST** `/api/license/mint`
@@ -107,7 +107,6 @@ The backend includes automatic retry logic for blockchain transactions:
 ## Recent Updates
 
 - ✅ Application name: imite (contract key ModredIPModule#ModredIP retained for compatibility)
-- ✅ Added license validation (one license per IP)
-- ✅ Improved nonce handling with retry logic
-- ✅ Enhanced error messages and user feedback
-- ✅ Updated contract address to V2 (0x2D0456CE5e446ef9C8f513832a0bd361201990Ab) 
+- ✅ API expects `imiteContractAddress` for register and license endpoints
+- ✅ Storacha uploads are **client-side only**; backend does not perform Storacha uploads (returns 501 if called)
+- ✅ License validation (one license per IP), nonce retry logic, V2 contract address 
