@@ -248,8 +248,8 @@ export const registerIpWithFlow = async (
                                     continue;
                                 }
                             }
-                        } catch (searchError) {
-                            console.log(`⚠️ Could not find transaction hash:`, searchError);
+                        } catch (lookupError) {
+                            console.log(`⚠️ Could not find transaction hash:`, lookupError);
                         }
                         
                         // If we still don't have a hash, throw the error to trigger retry logic
@@ -446,8 +446,8 @@ export const mintLicenseOnFlow = async (
                                     continue;
                                 }
                             }
-                        } catch (searchError) {
-                            console.log(`⚠️ Could not find transaction hash:`, searchError);
+                        } catch (lookupError) {
+                            console.log(`⚠️ Could not find transaction hash:`, lookupError);
                         }
                         
                         // If we still don't have a hash, throw the error to trigger retry logic

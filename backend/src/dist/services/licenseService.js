@@ -7,7 +7,7 @@ const bigIntSerializer_1 = require("../utils/bigIntSerializer");
 const mintLicense = async (licenseRequest) => {
     try {
         // Check if a license already exists for this IP (tokenId)
-        const hasExistingLicense = await (0, storyService_1.checkExistingLicenses)(licenseRequest.tokenId, licenseRequest.searContractAddress);
+        const hasExistingLicense = await (0, storyService_1.checkExistingLicenses)(licenseRequest.tokenId, licenseRequest.imiteContractAddress);
         if (hasExistingLicense) {
             return {
                 success: false,
@@ -15,7 +15,7 @@ const mintLicense = async (licenseRequest) => {
                 message: 'License minting failed: IP already has a license'
             };
         }
-        const { txHash, blockNumber, explorerUrl } = await (0, storyService_1.mintLicenseOnFlow)(licenseRequest.tokenId, licenseRequest.royaltyPercentage, licenseRequest.duration, licenseRequest.commercialUse, licenseRequest.terms, licenseRequest.searContractAddress);
+        const { txHash, blockNumber, explorerUrl } = await (0, storyService_1.mintLicenseOnFlow)(licenseRequest.tokenId, licenseRequest.royaltyPercentage, licenseRequest.duration, licenseRequest.commercialUse, licenseRequest.terms, licenseRequest.imiteContractAddress);
         const result = {
             success: true,
             txHash,

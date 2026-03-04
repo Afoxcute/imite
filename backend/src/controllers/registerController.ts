@@ -7,9 +7,8 @@ import { convertBigIntsToStrings } from '../utils/bigIntSerializer';
 const handleRegistration = async (req: Request, res: Response) => {
   console.log("🔥 Entered handleRegistration");
   try {
-    const { ipHash, metadata, isEncrypted, searContractAddress, modredIpContractAddress, skipContractCall } = req.body;
-    // Support both new (searContractAddress) and legacy (modredIpContractAddress) parameter names
-    const contractAddress = searContractAddress || modredIpContractAddress;
+    const { ipHash, metadata, isEncrypted, imiteContractAddress, skipContractCall } = req.body;
+    const contractAddress = imiteContractAddress ?? req.body.modredIpContractAddress;
     console.log("📦 Received body:", req.body);
 
     // Validate required parameters
@@ -43,7 +42,7 @@ const handleRegistration = async (req: Request, res: Response) => {
     // Validate contract address if contract call is required
     if (!contractAddress) {
       return res.status(400).json({
-        error: 'Missing required parameter: searContractAddress (or modredIpContractAddress). Set skipContractCall=true to test without contract.'
+        error: 'Missing required parameter: imiteContractAddress. Set skipContractCall=true to test without contract.'
       });
     }
 
@@ -205,7 +204,7 @@ const handleRegistration = async (req: Request, res: Response) => {
           brand_name: null,
           data: {
             type: 'email' as const,
-            email_address: parsedMetadata.creator_email || 'creator@sear.com'
+            email_address: parsedMetadata.creator_email || 'creator@imite.com'
           }
         }
       ];
@@ -219,7 +218,7 @@ const yakoaResponse = await registerToYakoa({
         media: yakoaMedia,
         brandId: null,
         brandName: null,
-        emailAddress: parsedMetadata.creator_email || 'creator@sear.com',
+        emailAddress: parsedMetadata.creator_email || 'creator@imite.com',
         licenseParents: [],
         authorizations: authorizations,
 });

@@ -9,7 +9,7 @@
    $env:DEPLOYER_PRIVATE_KEY = "your_private_key_without_0x_prefix"
    ```
    
-   **Or create a `.env` file** in the `searalt` directory:
+   **Or create a `.env` file** in the project root:
    ```
    DEPLOYER_PRIVATE_KEY=your_private_key_without_0x_prefix
    ```
@@ -18,11 +18,11 @@
 
 ## Step 2: Deploy the Contract
 
-Navigate to the `searalt` directory and run:
+Navigate to the project root and run:
 
 **PowerShell:**
 ```powershell
-cd searalt
+cd imite
 npx hardhat ignition deploy ignition/modules/ModredIP.ts --network flowTestnet
 ```
 

@@ -804,6 +804,26 @@
   word-break: break-all;
 }
 
+/* Description field: stack label above value + button to avoid overlap */
+.card-field-description {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.card-field-description .card-field-value-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.card-field-description .card-field-value {
+  max-width: 100%;
+  text-align: left;
+  word-break: break-word;
+}
+
 .card-actions {
   display: flex;
   gap: 0.75rem;

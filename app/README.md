@@ -1,12 +1,12 @@
-# Sear Frontend
+# imite Frontend
 
-A React-based frontend for the Sear intellectual property management system on Flow.
+A React-based frontend for the imite intellectual property management system on Flow.
 
 ## Features
 
 ### 1. Register IP Asset
 - Mint an NFT representing ownership of your intellectual property
-- Register the NFT as an IP Asset on the Sear system
+- Register the NFT as an IP Asset on the imite system
 - Upload IP content and metadata to IPFS
 - Set encryption flags for sensitive content
 
@@ -141,7 +141,7 @@ A React-based frontend for the Sear intellectual property management system on F
 ## Technical Details
 
 - **Blockchain**: Flow EVM Testnet (Chain ID: 545)
-- **Smart Contract**: Sear.sol
+- **Smart Contract**: ModredIP (IP module)
 - **Wallet Integration**: Thirdweb SDK
 - **IPFS**: Used for storing IP content, metadata, and license terms
 - **ERC-6551**: Token-bound accounts for IP management
@@ -149,11 +149,11 @@ A React-based frontend for the Sear intellectual property management system on F
 ## Contract Addresses
 
 Current deployed contract addresses are stored in `src/deployed_addresses.json`:
-- **Sear (V2)**: `0x2D0456CE5e446ef9C8f513832a0bd361201990Ab` (ModredIPModule#ModredIP)
+- **imite (V2)**: `0x2D0456CE5e446ef9C8f513832a0bd361201990Ab` (ModredIPModule#ModredIP)
 - **ERC6551Registry**: `0xE8e9E9dce38bEa250e35Fc212DAE0EA836EF4E7B`
 - **ERC6551Account**: `0xe01C006f52F3b78ed62C9A71B8Cbd3644b5eA749`
 
-**Note**: The contract key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "Sear".
+**Note**: The contract key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "imite".
 
 ## Security Features
 

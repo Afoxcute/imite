@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("./utils/config");
 const viem_1 = require("viem");
-// Sear contract ABI (simplified for IP registration)
+// imite IP contract ABI (simplified for IP registration)
 const SEAR_ABI = [
     {
         "inputs": [
@@ -100,8 +100,8 @@ async function main() {
     console.log('='.repeat(60));
     const v1Address = '0x0734d90FA1857C073c4bf1e57f4F4151BE2e9f82';
     const v2Address = '0x2D0456CE5e446ef9C8f513832a0bd361201990Ab';
-    const v1HasFunction = await verifyContract(v1Address, 'Sear Module V1');
-    const v2HasFunction = await verifyContract(v2Address, 'Sear Module V2');
+    const v1HasFunction = await verifyContract(v1Address, 'imite Module V1');
+    const v2HasFunction = await verifyContract(v2Address, 'imite Module V2');
     console.log('\n' + '='.repeat(60));
     console.log('\n📊 SUMMARY:');
     console.log(`V1 Contract (${v1Address.substring(0, 10)}...): ${v1HasFunction ? '✅ HAS registerIP' : '❌ NO registerIP'}`);

@@ -1,4 +1,4 @@
-# 🚀 Sear - Revolutionary IP Management Platform
+# 🚀 imite - Revolutionary IP Management Platform
 
 > **The Future of Intellectual Property Management on Blockchain**
 
@@ -12,7 +12,7 @@
 ## Project Details
 
 **Project Description**  
-Sear is a decentralized intellectual property (IP) management platform built on Flow. Creators can register IP assets as token-bound accounts (ERC-6551), mint licenses with programmable terms and royalties, receive and distribute revenue on-chain, and resolve disputes through an arbitration system. The platform uses IPFS for storage, integrates AI-powered infringement detection, and offers transfer and gifting of IP assets with full on-chain provenance. Built for the creator economy, Sear unifies registration, licensing, monetization, and protection in one dashboard with verifiable, transparent records.
+imite is a decentralized intellectual property (IP) management platform built on Flow. Creators can register IP assets as token-bound accounts (ERC-6551), mint licenses with programmable terms and royalties, receive and distribute revenue on-chain, and resolve disputes through an arbitration system. The platform uses IPFS for storage, integrates AI-powered infringement detection, and offers transfer and gifting of IP assets with full on-chain provenance. Built for the creator economy, imite unifies registration, licensing, monetization, and protection in one dashboard with verifiable, transparent records.
 
 **Hackathon track:** Legacy Builders
 
@@ -75,14 +75,14 @@ A submission without a demo video link will not be scored.
 To democratize intellectual property management by creating a decentralized, transparent, and automated platform that empowers creators to protect, monetize, and manage their IP assets with unprecedented efficiency.
 
 ### Mission
-Sear revolutionizes IP management by combining blockchain technology with AI-powered infringement detection, creating a comprehensive ecosystem where creators can register, license, monetize, and protect their intellectual property with built-in enforcement mechanisms.
+imite revolutionizes IP management by combining blockchain technology with AI-powered infringement detection, creating a comprehensive ecosystem where creators can register, license, monetize, and protect their intellectual property with built-in enforcement mechanisms.
 
 ---
 
 ## 💼 Business Model
 
 ### Core Value Proposition
-Sear addresses critical pain points in the current IP management landscape:
+imite addresses critical pain points in the current IP management landscape:
 
 1. **Fragmented IP Management**: Centralized platform for all IP lifecycle
 2. **Inefficient Licensing**: Automated, programmable licensing terms
@@ -130,7 +130,7 @@ Sear addresses critical pain points in the current IP management landscape:
 
 ### Infrastructure
 - **Blockchain**: Flow EVM Testnet (Chain ID: 545)
-- **Storage**: IPFS for censorship-resistant content
+- **Storage**: IPFS (Pinata) or **Storacha** (optional decentralized hot storage on Filecoin). When the backend has `STORACHA_KEY` and `STORACHA_PROOF` set, the app can upload IP assets to Storacha and retrieve via [storacha.link](https://storacha.link). See [Storacha docs](https://docs.storacha.network/).
 - **Monitoring**: Yakoa API for infringement detection
 - **Deployment**: Hardhat Ignition for contract deployment
 
@@ -382,10 +382,10 @@ The founders experienced firsthand the challenges of IP management:
 ### Quick Start
 ```bash
 # Clone the repository
-git clone https://github.com/sear/sear-platform.git
+git clone https://github.com/your-org/imite.git
 
 # Install dependencies
-cd sear-platform
+cd imite
 npm install
 
 # Start development server
@@ -410,6 +410,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ by the Sear Team**
+**Built with ❤️ by the imite Team**
 
 *Empowering creators to protect and monetize their intellectual property through blockchain technology.*

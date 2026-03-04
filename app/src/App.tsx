@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useNotificationHelpers } from "./contexts/NotificationContext";
 import { NotificationButton } from "./components/NotificationButton";
@@ -20,6 +20,7 @@ import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { parseEther, formatEther, keccak256, toBytes } from "viem";
 import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";
 import { decryptMetadata, encryptMetadata, isEncryptedPayload } from "./utils/confidential";
+import { uploadFileToStoracha, uploadJSONToStoracha, getStorachaGatewayUrl, getStorachaStatus, setStorachaCredentials } from "./utils/storacha";
 
 // Type assertion to include the ModredIP and ConfidentialIPAsset contract addresses
 type ContractAddresses = {
@@ -183,9 +184,9 @@ const pinFileToIPFS = async (file: File): Promise<{
     // Add metadata
     const metadata = {
       name: file.name,
-      description: `Uploaded via Sear frontend`,
+      description: `Uploaded via imite frontend`,
       attributes: {
-        uploadedBy: 'Sear',
+        uploadedBy: 'imite',
         timestamp: new Date().toISOString(),
         fileType: file.type,
         fileSize: file.size
@@ -318,8 +319,8 @@ const wallets = [
   createWallet("global.safe"),
 ];
 
-// Sear Contract ABI (simplified for the functions we need)
-const SEAR_ABI = [
+// IP Contract ABI (simplified for the functions we need)
+const IP_ABI = [
   {
     inputs: [
       { name: "tokenId", type: "uint256" }
@@ -885,37 +886,22 @@ const EnhancedAssetPreview: React.FC<{
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [triedStorachaFallback, setTriedStorachaFallback] = useState(false);
+
+  const contentRef = (metadata?.image ?? asset.ipHash ?? '').toString().replace(/^ipfs:\/\//, '').trim();
 
   useEffect(() => {
     const fetchImageFromMetadata = async () => {
       try {
         setLoading(true);
         setImageError(false);
-        
-        // Priority 1: Check if metadata has image field
-        if (metadata?.image) {
-          let imageSource = metadata.image;
-          
-          // Convert IPFS URLs to gateway URLs
-          if (imageSource.startsWith('ipfs://')) {
-            imageSource = `https://gateway.pinata.cloud/ipfs/${imageSource.replace('ipfs://', '')}`;
-          }
-          
-          setImageUrl(imageSource);
-        } 
-        // Priority 2: Try the asset's ipHash directly
-        else if (asset.ipHash) {
-          let gatewayUrl = asset.ipHash;
-          if (gatewayUrl.startsWith('ipfs://')) {
-            gatewayUrl = `https://gateway.pinata.cloud/ipfs/${gatewayUrl.replace('ipfs://', '')}`;
-          }
-          setImageUrl(gatewayUrl);
-        }
-        // Priority 3: Use mediaUrl as fallback
-        else if (mediaUrl) {
-          setImageUrl(mediaUrl);
+        setTriedStorachaFallback(false);
+        const imageOrHash = metadata?.image ?? asset.ipHash;
+        const cid = imageOrHash ? (imageOrHash + '').replace(/^ipfs:\/\//, '').trim() : '';
+        if (cid) {
+          setImageUrl(getIPFSGatewayURL(`ipfs://${cid}`));
         } else {
-          setImageUrl(null);
+          setImageUrl(mediaUrl || null);
         }
       } catch (error) {
         console.error('Error fetching image from metadata:', error);
@@ -926,10 +912,16 @@ const EnhancedAssetPreview: React.FC<{
     };
 
     fetchImageFromMetadata();
-  }, [metadata, asset.ipHash, mediaUrl]);
+  }, [metadata?.image, asset.ipHash, mediaUrl]);
 
   const handleImageError = () => {
-    setImageError(true);
+    if (!triedStorachaFallback && contentRef) {
+      setTriedStorachaFallback(true);
+      setImageUrl(getStorachaGatewayUrl(contentRef));
+      setImageError(false);
+    } else {
+      setImageError(true);
+    }
   };
 
   if (loading) {
@@ -996,6 +988,13 @@ export default function App({ thirdwebClient }: AppProps) {
   // Decrypted content per token (session-only; used when user enters password for encrypted IP)
   const [decryptedMetadata, setDecryptedMetadata] = useState<Map<number, { name: string; description: string }>>(new Map());
   const [decryptingTokenId, setDecryptingTokenId] = useState<number | null>(null);
+  type StorageProvider = 'storacha' | 'pinata';
+  const [storageProvider, setStorageProvider] = useState<StorageProvider>(() =>
+    getStorachaStatus().available ? 'storacha' : 'pinata'
+  );
+  const [storachaAvailable, setStorachaAvailable] = useState<boolean>(() => getStorachaStatus().available);
+  const [storachaKeyInput, setStorachaKeyInput] = useState('');
+  const [storachaProofInput, setStorachaProofInput] = useState('');
 
   // Merged metadata for display (decrypted overrides when available); must be top-level hook
   const displayMetadata = useMemo(() => {
@@ -1111,7 +1110,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
     try {
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -1280,16 +1279,16 @@ export default function App({ thirdwebClient }: AppProps) {
       setBackendStatus(isConnected);
       
       if (!wasConnected && isConnected) {
-        notifySuccess('Backend Connected', 'Successfully connected to the Sear backend service');
+        notifySuccess('Backend Connected', 'Successfully connected to the imite backend service');
       } else if (wasConnected && !isConnected) {
-        notifyError('Backend Disconnected', 'Lost connection to the Sear backend service');
+        notifyError('Backend Disconnected', 'Lost connection to the imite backend service');
       }
     } catch (error) {
       const wasConnected = backendStatus;
       setBackendStatus(false);
       
       if (wasConnected) {
-        notifyError('Backend Error', 'Failed to connect to the Sear backend service');
+        notifyError('Backend Error', 'Failed to connect to the imite backend service');
       }
     }
   };
@@ -1348,7 +1347,7 @@ export default function App({ thirdwebClient }: AppProps) {
     }
   };
 
-  // Upload file to IPFS
+  // Upload file to IPFS (Pinata) or Storacha
   const uploadToIPFS = async () => {
     if (!ipFile) {
       notifyError("No File Selected", "Please select a file to upload");
@@ -1357,52 +1356,53 @@ export default function App({ thirdwebClient }: AppProps) {
 
     try {
       setLoading(true);
-      notifyInfo('Uploading to IPFS', `Uploading ${ipFile.name} to IPFS...`);
-      
-      const uploadResult = await pinFileToIPFS(ipFile);
-      
+      const useStoracha = storageProvider === 'storacha' && storachaAvailable;
+      notifyInfo(
+        useStoracha ? 'Uploading to Storacha' : 'Uploading to IPFS',
+        `Uploading ${ipFile.name}...`
+      );
+
+      let uploadResult: { success: boolean; cid?: string; message?: string; error?: string; gatewayUrl?: string };
+      if (useStoracha) {
+        uploadResult = await uploadFileToStoracha(ipFile);
+      } else {
+        uploadResult = await pinFileToIPFS(ipFile);
+      }
+
       if (uploadResult.success && uploadResult.cid) {
-        // Clear any previous file preview
         setFilePreview(null);
-        
-        // Set the IPFS hash
         const ipfsUrl = `ipfs://${uploadResult.cid}`;
         setIpHash(ipfsUrl);
-        
-        // Get gateway URL for display
-        const gatewayUrl = getIPFSGatewayURL(ipfsUrl);
-        
-        // Show success message
-        notifySuccess('IPFS Upload Successful', 
-          `File uploaded successfully!\nCID: ${uploadResult.cid}`, 
+        const gatewayUrl =
+          useStoracha && uploadResult.gatewayUrl
+            ? uploadResult.gatewayUrl
+            : getIPFSGatewayURL(ipfsUrl);
+        notifySuccess(
+          useStoracha ? 'Storacha Upload Successful' : 'IPFS Upload Successful',
+          `File uploaded successfully!\nCID: ${uploadResult.cid}`,
           {
             action: {
               label: 'View File',
-              onClick: () => window.open(gatewayUrl, '_blank')
-            }
+              onClick: () => window.open(gatewayUrl, '_blank'),
+            },
           }
         );
-        
         return uploadResult.cid;
-    } else {
-        // Handle specific upload errors
-        const errorMessage = uploadResult.message || "Failed to upload file";
+      } else {
+        const errorMessage = uploadResult.error || uploadResult.message || 'Failed to upload file';
         notifyError('Upload Failed', errorMessage);
-        
-        // Reset file selection if upload fails
         setIpFile(null);
         setFilePreview(null);
-        
         return null;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Unexpected upload error:', err);
-      notifyError('Upload Error', err.message || "Unexpected error during file upload");
-      
-      // Reset file selection
+      notifyError(
+        'Upload Error',
+        err instanceof Error ? err.message : 'Unexpected error during file upload'
+      );
       setIpFile(null);
       setFilePreview(null);
-      
       return null;
     } finally {
       setLoading(false);
@@ -1416,10 +1416,10 @@ export default function App({ thirdwebClient }: AppProps) {
     try {
       setLoading(true);
       const contractAddress = CONTRACT_ADDRESSES["ModredIPModule#ModredIP"];
-      console.log("📋 Using Sear Contract:", contractAddress);
+      console.log("📋 Using imite Contract:", contractAddress);
       
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
           client: thirdwebClient,
           chain: defineChain(flowTestnet.id),
         address: contractAddress,
@@ -1605,6 +1605,23 @@ export default function App({ thirdwebClient }: AppProps) {
     loadContractData();
   }, [account?.address]);
 
+  const checkStorachaStatus = useCallback(() => {
+    const status = getStorachaStatus();
+    setStorachaAvailable(status.available);
+    if (status.available) setStorageProvider((p) => (p === 'pinata' ? 'storacha' : p));
+  }, []);
+
+  const saveStorachaCredentials = useCallback(() => {
+    const key = storachaKeyInput.trim();
+    const proof = storachaProofInput.trim().replace(/\s+/g, '');
+    if (!key || !proof) return;
+    setStorachaCredentials(key, proof);
+    setStorachaAvailable(true);
+    setStorageProvider('storacha');
+    setStorachaKeyInput('');
+    setStorachaProofInput('');
+  }, [storachaKeyInput, storachaProofInput]);
+
   // Decrypt an encrypted IP asset's metadata with the user's password
   const handleDecryptAsset = async (tokenId: number, ciphertext: string) => {
     const password = window.prompt("Enter the password used to encrypt this IP asset:");
@@ -1630,13 +1647,12 @@ export default function App({ thirdwebClient }: AppProps) {
     }
   };
 
-  // Create standardized NFT metadata
+  // Create standardized NFT metadata (uses selected storage provider: Storacha or Pinata)
   const createNFTMetadata = async (ipHash: string, name: string, description: string, isEncrypted: boolean) => {
-    // Generate metadata object
     const metadata = {
-      name: name || `IP Asset #${Date.now()}`, // Use provided name or generate unique name
+      name: name || `IP Asset #${Date.now()}`,
       description: description || "No description provided",
-      image: ipHash, // Use IPFS hash as image reference
+      image: ipHash,
       properties: {
         ipHash,
         name: name || "Unnamed",
@@ -1646,17 +1662,21 @@ export default function App({ thirdwebClient }: AppProps) {
       }
     };
 
-    // Upload metadata to IPFS
+    const useStoracha = storageProvider === 'storacha' && storachaAvailable;
+    if (useStoracha) {
+      const result = await uploadJSONToStoracha(metadata);
+      if (!result.success || !result.cid) {
+        throw new Error(result.error || 'Failed to upload metadata to Storacha');
+      }
+      return result.ipfsUrl ?? `ipfs://${result.cid}`;
+    }
+
     const metadataBlob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
     const metadataFile = new File([metadataBlob], 'metadata.json');
-    
     const metadataUploadResult = await pinFileToIPFS(metadataFile);
-    
     if (!metadataUploadResult.success || !metadataUploadResult.cid) {
       throw new Error('Failed to upload metadata to IPFS');
     }
-
-    // Return IPFS URL for metadata
     return `ipfs://${metadataUploadResult.cid}`;
   };
 
@@ -1690,7 +1710,7 @@ export default function App({ thirdwebClient }: AppProps) {
         license_type: 'all_rights_reserved',
         commercial_use: false,
         derivatives_allowed: false,
-        creator_email: 'creator@sear.com', // Could be enhanced with user input
+        creator_email: 'creator@imite.com', // Could be enhanced with user input
         // File-specific metadata
         file_name: ipFile?.name || 'unknown',
         file_extension: ipFile?.name?.split('.').pop() || 'unknown',
@@ -1758,7 +1778,7 @@ export default function App({ thirdwebClient }: AppProps) {
           ipHash: ipHash,
           metadata: metadataToSend,
           isEncrypted: isEncrypted,
-          searContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+          imiteContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
           skipContractCall: false // V2 contract has registerIP function, so this should be false
         })
       });
@@ -1973,7 +1993,7 @@ export default function App({ thirdwebClient }: AppProps) {
           duration: licenseDuration,
           commercialUse: commercialUse,
           terms: licenseTerms.terms,
-          searContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"]
+          imiteContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"]
         })
       });
 
@@ -2079,7 +2099,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Processing Payment', `Paying ${paymentAmount} FLOW in revenue...`);
 
         const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
           client: thirdwebClient,
           chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2160,7 +2180,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Claiming Royalties', 'Processing royalty claim...');
 
         const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
           client: thirdwebClient,
           chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2242,7 +2262,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Raising Dispute', 'Submitting dispute...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2298,7 +2318,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Registering Arbitrator', `Registering with ${minArbitratorStake} FLOW stake...`);
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2343,7 +2363,7 @@ export default function App({ thirdwebClient }: AppProps) {
       
       // Check arbitrator status before unstaking
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2444,7 +2464,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Assigning Arbitrators', `Assigning ${selectedArbitrators.length} arbitrator(s) to dispute...`);
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2501,7 +2521,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Checking Resolution', 'Checking if dispute can be resolved after 24h wait period...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2579,7 +2599,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Transferring IP', 'Initiating IP asset transfer...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2686,7 +2706,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Resolving Dispute', 'Resolving dispute without arbitrators...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2741,7 +2761,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Submitting Decision', 'Submitting arbitration decision...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2781,7 +2801,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
     try {
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -3106,8 +3126,8 @@ export default function App({ thirdwebClient }: AppProps) {
         <header className="header">
           <div className="header-container">
             <div className="header-logo">
-              <img src="/sear.png" alt="Sear" className="logo-image" />
-              <h1>Sear</h1>
+              <img src="/imite.png" alt="imite" className="logo-image" />
+              <h1>imite</h1>
             </div>
             <div className="header-actions">
               <div className={`status-indicator ${backendStatus ? 'connected' : 'disconnected'}`}>
@@ -3135,7 +3155,7 @@ export default function App({ thirdwebClient }: AppProps) {
                   Own, license, and protect your intellectual property on-chain
                 </h2>
                 <p className="landing-subtitle">
-                  Sear puts your IP on the blockchain: register assets, mint licenses, collect royalties, resolve disputes, and transfer ownership—all from one dashboard with verifiable provenance.
+                  imite puts your IP on the blockchain: register assets, mint licenses, collect royalties, resolve disputes, and transfer ownership—all from one dashboard with verifiable provenance.
                 </p>
                 <div className="landing-actions">
                   <div className="landing-cta-primary">
@@ -3173,7 +3193,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
               <div className="landing-illustration">
                 <div className="landing-illustration-inner">
-                  <svg viewBox="0 0 420 320" role="img" aria-label="Sear dashboard overview">
+                  <svg viewBox="0 0 420 320" role="img" aria-label="imite dashboard overview">
                     <defs>
                       <linearGradient id="landing-grad1" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.9" />
@@ -3308,8 +3328,8 @@ export default function App({ thirdwebClient }: AppProps) {
       <header className="header">
         <div className="header-container">
           <div className="header-logo">
-            <img src="/sear.png" alt="Sear" className="logo-image" />
-            <h1>Sear</h1>
+            <img src="/imite.png" alt="imite" className="logo-image" />
+            <h1>imite</h1>
           </div>
           <div className="header-actions">
             <div className={`status-indicator ${backendStatus ? 'connected' : 'disconnected'}`}>
@@ -3443,12 +3463,54 @@ export default function App({ thirdwebClient }: AppProps) {
               </div>
             )}
 
+            <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+              <label className="form-label">Storage provider</label>
+              <select
+                className="form-input"
+                value={storageProvider}
+                onChange={(e) => setStorageProvider(e.target.value as StorageProvider)}
+              >
+                <option value="storacha">Storacha (default)</option>
+                <option value="pinata">Pinata</option>
+              </select>
+              {!storachaAvailable && storageProvider === 'storacha' && (
+                <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'rgba(0,0,0,0.05)', borderRadius: '8px' }}>
+                  <small style={{ display: 'block', opacity: 0.9, marginBottom: '0.5rem' }}>
+                    Enter your Storacha key and proof. Key from <code>storacha key create</code>; proof from <code>storacha delegation create &lt;did&gt; --base64 --can space/blob/add --can space/index/add --can filecoin/offer --can upload/add</code> (use the DID from key create). Saved for this session only.
+                  </small>
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="Storacha key (starts with Mg...)"
+                    value={storachaKeyInput}
+                    onChange={(e) => setStorachaKeyInput(e.target.value)}
+                    style={{ marginBottom: '0.5rem' }}
+                  />
+                  <textarea
+                    className="form-input"
+                    placeholder="Storacha proof (base64 delegation)"
+                    value={storachaProofInput}
+                    onChange={(e) => setStorachaProofInput(e.target.value)}
+                    rows={3}
+                    style={{ marginBottom: '0.5rem', resize: 'vertical' }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button type="button" className="btn btn-secondary" onClick={saveStorachaCredentials} disabled={!storachaKeyInput.trim() || !storachaProofInput.trim()}>
+                      Save for this session
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={checkStorachaStatus}>
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <button 
               className="btn btn-secondary btn-full"
               onClick={uploadToIPFS} 
               disabled={!ipFile || loading}
             >
-              {loading ? '⏳ Uploading...' : '🚀 Upload to IPFS'}
+              {loading ? '⏳ Uploading...' : storageProvider === 'storacha' && storachaAvailable ? '🚀 Upload to Storacha' : '🚀 Upload to IPFS'}
             </button>
             {/* IP Details Form */}
             <div className="form-group">
@@ -3484,6 +3546,9 @@ export default function App({ thirdwebClient }: AppProps) {
                     <p>Media Preview</p>
                     <a href={getIPFSGatewayURL(ipHash)} target="_blank" rel="noopener noreferrer" className="media-link">
                       🔗 View Media
+                    </a>
+                    <a href={getStorachaGatewayUrl(ipHash)} target="_blank" rel="noopener noreferrer" className="media-link" style={{ marginLeft: '0.5rem' }}>
+                      🔥 View on Storacha
                     </a>
         </div>
       </div>
@@ -4886,24 +4951,26 @@ export default function App({ thirdwebClient }: AppProps) {
                       <span className="card-field-value address">{asset.owner.substring(0, 10)}...</span>
                       </div>
                     
-                    <div className="card-field">
+                    <div className="card-field card-field-description">
                       <span className="card-field-label">Description</span>
-                      <span className="card-field-value">
-                        {isEncryptedPlaceholder && !decrypted
-                          ? "Confidential. Use your encryption password to view."
-                          : (metadata.description || "No description")}
-                      </span>
-                      {isEncryptedPlaceholder && !decrypted && (
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          style={{ marginTop: "0.5rem" }}
-                          disabled={decryptingTokenId === id}
-                          onClick={() => handleDecryptAsset(id, rawMetadata._ciphertext)}
-                        >
-                          {decryptingTokenId === id ? "Decrypting…" : "🔓 Decrypt to view"}
-                        </button>
-                      )}
+                      <div className="card-field-value-block">
+                        <span className="card-field-value">
+                          {isEncryptedPlaceholder && !decrypted
+                            ? "Confidential. Use your encryption password to view."
+                            : (metadata.description || "No description")}
+                        </span>
+                        {isEncryptedPlaceholder && !decrypted && (
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            style={{ marginTop: "0.5rem", display: "block" }}
+                            disabled={decryptingTokenId === id}
+                            onClick={() => handleDecryptAsset(id, rawMetadata._ciphertext)}
+                          >
+                            {decryptingTokenId === id ? "Decrypting…" : "🔓 Decrypt to view"}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="card-field">

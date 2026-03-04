@@ -32,7 +32,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "ipHash": "ipfs://Qm...",
     "metadata": "{\"name\":\"IP Asset Name\",\"description\":\"...\",...}",
     "isEncrypted": false,
-    "searContractAddress": "0x2D0456CE5e446ef9C8f513832a0bd361201990Ab",
+    "imiteContractAddress": "0x2D0456CE5e446ef9C8f513832a0bd361201990Ab",
     "skipContractCall": false
   }
   ```
@@ -49,7 +49,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "duration": 86400,
     "commercialUse": true,
     "terms": "{\"transferable\":true,\"commercialAttribution\":true,...}",
-    "searContractAddress": "0x2D0456CE5e446ef9C8f513832a0bd361201990Ab"
+    "imiteContractAddress": "0x2D0456CE5e446ef9C8f513832a0bd361201990Ab"
   }
   ```
 - **Validation**: Automatically checks if a license already exists for the IP asset
@@ -106,7 +106,7 @@ The backend includes automatic retry logic for blockchain transactions:
 
 ## Recent Updates
 
-- ✅ Renamed from "ModredIP" to "Sear" throughout the codebase
+- ✅ Application name: imite (contract key ModredIPModule#ModredIP retained for compatibility)
 - ✅ Added license validation (one license per IP)
 - ✅ Improved nonce handling with retry logic
 - ✅ Enhanced error messages and user feedback

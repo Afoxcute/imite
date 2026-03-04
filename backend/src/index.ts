@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -7,9 +8,14 @@ import registerRoutes from './routes/register';
 import yakoaRoutes from './routes/yakoaRoutes';
 import licenseRoutes from './routes/license';
 import infringementRoutes from './routes/infringement';
+import storachaRoutes from './routes/storacha';
 
-// Load environment variables
-dotenv.config();
+// Load .env from backend project root so STORACHA_KEY, STORACHA_PROOF, etc. are found
+const envPath = path.resolve(__dirname, '..', '.env');
+const loaded = dotenv.config({ path: envPath });
+if (loaded.error && process.env.NODE_ENV !== 'test') {
+  console.warn('No .env file at', envPath, '(using process env only)');
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +29,7 @@ app.use('/api/register', registerRoutes);
 app.use('/api/yakoa', yakoaRoutes);
 app.use('/api/license', licenseRoutes);
 app.use('/api/infringement', infringementRoutes);
+app.use('/api/storacha', storachaRoutes);
 
 // Default route (optional)
 app.get('/', (_req, res) => {
