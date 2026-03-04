@@ -2,12 +2,10 @@
 
 ## Current Contract Status
 
-The application is currently using the V2 contract:
-- **V2 Contract**: `0x2D0456CE5e446ef9C8f513832a0bd361201990Ab`
-- **Contract Key**: `ModredIPModule#ModredIP` (maintained for compatibility)
+The application uses the **ImiteIP** contract (ERC721 symbol **FLOW**):
+- **Contract key**: `ImiteIPModule#ImiteIP`
 - **Status**: ✅ Active and verified to have `registerIP` function
-
-**Note**: The contract key name "ModredIPModule#ModredIP" is maintained for backward compatibility, but the application is branded as "imite".
+- Addresses are stored in `app/src/deployed_addresses.json`
 
 ## Option 2: Deploy a New Contract
 
@@ -29,18 +27,18 @@ The application is currently using the V2 contract:
 
 1. **Deploy using Hardhat Ignition:**
    ```bash
-   npx hardhat ignition deploy ignition/modules/ModredIP.ts --network flowTestnet
+   npx hardhat ignition deploy ignition/modules/ImiteIP.ts --network flowTestnet
    ```
 
 2. **After deployment**, update `app/src/deployed_addresses.json`:
    ```json
    {
-     "ModredIPModule#ModredIP": "NEW_DEPLOYED_ADDRESS_HERE",
+     "ImiteIPModule#ImiteIP": "NEW_DEPLOYED_ADDRESS_HERE",
+     "ImiteIPModule#ERC6551Registry": "...",
+     "ImiteIPModule#ERC6551Account": "...",
      ...
    }
    ```
-   
-   **Note**: The key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "imite".
 
 3. **Verify the contract** (optional):
    ```bash
@@ -80,7 +78,7 @@ To check if a contract has the `registerIP` function:
 
 ## Contract Source
 
-The contract source is at: `contracts/ModredIP.sol`
+The contract source is at: `contracts/ImiteIP.sol`
 
 ### Key Functions
 

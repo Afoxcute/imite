@@ -7,8 +7,10 @@ import { convertBigIntsToStrings } from '../utils/bigIntSerializer';
 const handleRegistration = async (req: Request, res: Response) => {
   console.log("🔥 Entered handleRegistration");
   try {
-    const { ipHash, metadata, isEncrypted, imiteContractAddress, skipContractCall } = req.body;
+    const { ipHash, metadata, metadataUri, isEncrypted, imiteContractAddress, skipContractCall } = req.body;
     const contractAddress = imiteContractAddress ?? req.body.modredIpContractAddress;
+    // For non-encrypted, store metadata URI on-chain so tokenURI() returns a URL and explorers can show the image
+    const contractMetadata = !isEncrypted && metadataUri ? metadataUri : metadata;
     console.log("📦 Received body:", req.body);
 
     // Validate required parameters
@@ -46,14 +48,14 @@ const handleRegistration = async (req: Request, res: Response) => {
       });
     }
 
-    // 1. Register on Flow using ModredIP contract
+    // 1. Register on Flow using ImiteIP contract
     let txHash: string | null = null;
     let ipAssetId: number | undefined = undefined;
     let blockNumber: bigint | null = null;
     let explorerUrl: string | null = null;
 
     try {
-      const result = await registerIpWithFlow(ipHash, metadata, isEncrypted, contractAddress as Address);
+      const result = await registerIpWithFlow(ipHash, contractMetadata, isEncrypted, contractAddress as Address);
       txHash = result.txHash;
       ipAssetId = result.ipAssetId;
       blockNumber = result.blockNumber;

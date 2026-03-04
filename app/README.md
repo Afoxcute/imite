@@ -142,19 +142,14 @@ A React-based frontend for the imite intellectual property management system on 
 ## Technical Details
 
 - **Blockchain**: Flow EVM Testnet (Chain ID: 545)
-- **Smart Contract**: ModredIP (IP module)
+- **Smart Contract**: ImiteIP (IP module; token symbol FLOW)
 - **Wallet Integration**: Thirdweb SDK
 - **Storage**: IPFS via **Pinata** or **Storacha** (choose in UI; Storacha is client-side; credentials in `.env` or session)
 - **ERC-6551**: Token-bound accounts for IP management
 
 ## Contract Addresses
 
-Current deployed contract addresses are stored in `src/deployed_addresses.json`:
-- **imite (V2)**: `0x2D0456CE5e446ef9C8f513832a0bd361201990Ab` (ModredIPModule#ModredIP)
-- **ERC6551Registry**: `0xE8e9E9dce38bEa250e35Fc212DAE0EA836EF4E7B`
-- **ERC6551Account**: `0xe01C006f52F3b78ed62C9A71B8Cbd3644b5eA749`
-
-**Note**: The contract key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "imite".
+Current deployed contract addresses are stored in `src/deployed_addresses.json` under keys `ImiteIPModule#ImiteIP`, `ImiteIPModule#ERC6551Registry`, `ImiteIPModule#ERC6551Account`. The main IP contract uses token symbol **FLOW**.
 
 ## Security Features
 

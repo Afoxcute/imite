@@ -400,10 +400,10 @@ yarn install && yarn dev   # runs on http://localhost:5173
 - **App `.env`**: `VITE_API_URL` (default `http://localhost:5000`); optional `VITE_STORACHA_KEY` and `VITE_STORACHA_PROOF` for Storacha uploads without entering credentials in the UI. See `app/.env.example`.
 
 ### Contract deployment
-See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for deploying ModredIP to Flow EVM and updating `app/src/deployed_addresses.json`.
+See **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** for deploying ImiteIP to Flow EVM and updating `app/src/deployed_addresses.json`.
 
 ### Recent updates
-- **Branding**: Application name is **imite** (contract key `ModredIPModule#ModredIP` kept for compatibility).
+- **Branding**: Application name is **imite**; main contract is **ImiteIP** (token symbol **FLOW**), deployment key `ImiteIPModule#ImiteIP`.
 - **Storacha**: Client-side only; credentials via `app/.env` (VITE_STORACHA_*) or in-app form; storage provider dropdown (Storacha / Pinata); metadata upload uses selected provider.
 - **API**: Backend expects `imiteContractAddress` in register and license payloads.
 - **UI**: Description field layout fixed for encrypted assets; image preview works for both encrypted and non-encrypted IP (with Pinata/Storacha gateway fallback).

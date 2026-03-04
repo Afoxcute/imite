@@ -1,10 +1,10 @@
 # Flow IP Management Backend
 
-This backend service provides IP (Intellectual Property) management functionality on the Flow EVM testnet using the ModredIP smart contract.
+This backend service provides IP (Intellectual Property) management functionality on the Flow EVM testnet using the ImiteIP smart contract (token symbol FLOW).
 
 ## Features
 
-- **IP Registration**: Register IP assets on Flow EVM testnet using ModredIP contract
+- **IP Registration**: Register IP assets on Flow EVM testnet using ImiteIP contract
 - **License Minting**: Mint licenses for IP assets with customizable terms
 - **License Validation**: Enforces one license per IP asset (prevents duplicate licenses)
 - **IPFS Integration**: Upload metadata to IPFS for decentralized storage
@@ -32,7 +32,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "ipHash": "ipfs://Qm...",
     "metadata": "{\"name\":\"IP Asset Name\",\"description\":\"...\",...}",
     "isEncrypted": false,
-    "imiteContractAddress": "0x2D0456CE5e446ef9C8f513832a0bd361201990Ab",
+    "imiteContractAddress": "0xDa5E551070dB21890Be1fa17721DD549D3b6Ed31",
     "skipContractCall": false
   }
   ```
@@ -49,7 +49,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "duration": 86400,
     "commercialUse": true,
     "terms": "{\"transferable\":true,\"commercialAttribution\":true,...}",
-    "imiteContractAddress": "0x2D0456CE5e446ef9C8f513832a0bd361201990Ab"
+    "imiteContractAddress": "0xDa5E551070dB21890Be1fa17721DD549D3b6Ed31"
   }
   ```
 - **Validation**: Automatically checks if a license already exists for the IP asset
@@ -66,7 +66,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
 
 ## Smart Contracts
 
-- **ModredIP**: Main contract for IP registration and license management
+- **ImiteIP**: Main contract for IP registration and license management (ERC721 symbol: FLOW)
 - **ERC6551Registry**: Token-bound account registry
 - **ERC6551Account**: Token-bound account implementation
 
@@ -99,14 +99,14 @@ The backend includes automatic retry logic for blockchain transactions:
 
 1. **Network**: Flow EVM Testnet (Chain ID: 545)
 2. **Token**: Using native FLOW token for transactions
-3. **Contracts**: ModredIP contract for IP management
+3. **Contracts**: ImiteIP contract for IP management
 4. **License Validation**: Enforces one license per IP asset
 5. **Transaction Reliability**: Automatic retry with nonce management
 6. **Error Handling**: Comprehensive error messages and recovery
 
 ## Recent Updates
 
-- ✅ Application name: imite (contract key ModredIPModule#ModredIP retained for compatibility)
+- ✅ Application name: imite; contract: ImiteIP (token symbol FLOW), key ImiteIPModule#ImiteIP
 - ✅ API expects `imiteContractAddress` for register and license endpoints
 - ✅ Storacha uploads are **client-side only**; backend does not perform Storacha uploads (returns 501 if called)
 - ✅ License validation (one license per IP), nonce retry logic, V2 contract address 

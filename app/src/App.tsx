@@ -22,11 +22,11 @@ import CONTRACT_ADDRESS_JSON from "./deployed_addresses.json";
 import { decryptMetadata, encryptMetadata, isEncryptedPayload } from "./utils/confidential";
 import { uploadFileToStoracha, uploadJSONToStoracha, getStorachaGatewayUrl, getStorachaStatus, setStorachaCredentials } from "./utils/storacha";
 
-// Type assertion to include the ModredIP and ConfidentialIPAsset contract addresses
+// Type assertion to include the ImiteIP and ConfidentialIPAsset contract addresses
 type ContractAddresses = {
-  "ModredIPModule#ERC6551Account": string;
-  "ModredIPModule#ERC6551Registry": string;
-  "ModredIPModule#ModredIP": string;
+  "ImiteIPModule#ERC6551Account": string;
+  "ImiteIPModule#ERC6551Registry": string;
+  "ImiteIPModule#ImiteIP": string;
   "ConfidentialIPAssetModule#ConfidentialIPAsset": string;
 };
 
@@ -1116,7 +1116,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       // Get royalty info for the connected account
@@ -1205,7 +1205,7 @@ export default function App({ thirdwebClient }: AppProps) {
     }
 
     try {
-      const contractAddress = CONTRACT_ADDRESSES["ModredIPModule#ModredIP"].toLowerCase();
+      const contractAddress = CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"].toLowerCase();
       const response = await fetch(`${BACKEND_URL}/api/infringement/status/${contractAddress}/${tokenId}`);
       
       if (!response.ok) {
@@ -1418,7 +1418,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
     try {
       setLoading(true);
-      const contractAddress = CONTRACT_ADDRESSES["ModredIPModule#ModredIP"];
+      const contractAddress = CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"];
       console.log("📋 Using imite Contract:", contractAddress);
       
       const contract = getContract({
@@ -1652,10 +1652,12 @@ export default function App({ thirdwebClient }: AppProps) {
 
   // Create standardized NFT metadata (uses selected storage provider: Storacha or Pinata)
   const createNFTMetadata = async (ipHash: string, name: string, description: string, isEncrypted: boolean) => {
+    // Use full URI for image so block explorers (FlowScan, etc.) can resolve and display it
+    const imageUri = /^(ipfs:\/\/|https?:\/\/)/i.test(ipHash) ? ipHash : `ipfs://${ipHash}`;
     const metadata = {
       name: name || `IP Asset #${Date.now()}`,
       description: description || "No description provided",
-      image: ipHash,
+      image: imageUri,
       properties: {
         ipHash,
         name: name || "Unnamed",
@@ -1721,7 +1723,7 @@ export default function App({ thirdwebClient }: AppProps) {
         // Blockchain metadata
         network: 'flow',
         chain_id: '545',
-        contract_address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        contract_address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
         // Infringement detection metadata
         monitoring_enabled: true,
         infringement_alerts: true,
@@ -1770,8 +1772,8 @@ export default function App({ thirdwebClient }: AppProps) {
       //   ]
       // };
 
-      // Call backend API
-      // Note: If contract doesn't have registerIP function, set skipContractCall: true to test IPFS upload
+      // Call backend API. For non-encrypted, send metadataUri so the contract stores it and tokenURI()
+      // returns a URL — block explorers then fetch that URL and display the image from the JSON.
       const response = await fetch(`${BACKEND_URL}/api/register`, {
         method: 'POST',
         headers: {
@@ -1780,9 +1782,10 @@ export default function App({ thirdwebClient }: AppProps) {
         body: JSON.stringify({
           ipHash: ipHash,
           metadata: metadataToSend,
+          metadataUri: isEncrypted ? undefined : metadataUri,
           isEncrypted: isEncrypted,
-          imiteContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
-          skipContractCall: false // V2 contract has registerIP function, so this should be false
+          imiteContractAddress: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
+          skipContractCall: false
         })
       });
 
@@ -1996,7 +1999,7 @@ export default function App({ thirdwebClient }: AppProps) {
           duration: licenseDuration,
           commercialUse: commercialUse,
           terms: licenseTerms.terms,
-          imiteContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"]
+          imiteContractAddress: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"]
         })
       });
 
@@ -2105,7 +2108,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
           client: thirdwebClient,
           chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
         });
 
       const preparedCall = await prepareContractCall({
@@ -2186,7 +2189,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
           client: thirdwebClient,
           chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
         });
 
       const preparedCall = await prepareContractCall({
@@ -2268,7 +2271,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       const preparedCall = await prepareContractCall({
@@ -2324,7 +2327,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       const preparedCall = await prepareContractCall({
@@ -2369,7 +2372,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       // Get arbitrator details
@@ -2470,7 +2473,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       const preparedCall = await prepareContractCall({
@@ -2527,7 +2530,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       const preparedCall = await prepareContractCall({
@@ -2605,7 +2608,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       // Check for active disputes first
@@ -2712,7 +2715,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       const preparedCall = await prepareContractCall({
@@ -2767,7 +2770,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       const preparedCall = await prepareContractCall({
@@ -2807,7 +2810,7 @@ export default function App({ thirdwebClient }: AppProps) {
         abi: IP_ABI,
         client: thirdwebClient,
         chain: defineChain(flowTestnet.id),
-        address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+        address: CONTRACT_ADDRESSES["ImiteIPModule#ImiteIP"],
       });
 
       // Load minimum stake with error handling

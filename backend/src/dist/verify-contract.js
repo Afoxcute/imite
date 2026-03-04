@@ -98,23 +98,16 @@ async function verifyContract(contractAddress, contractName) {
 async function main() {
     console.log('🔍 Verifying Contracts for registerIP Function\n');
     console.log('='.repeat(60));
-    const v1Address = '0x0734d90FA1857C073c4bf1e57f4F4151BE2e9f82';
-    const v2Address = '0x2D0456CE5e446ef9C8f513832a0bd361201990Ab';
-    const v1HasFunction = await verifyContract(v1Address, 'imite Module V1');
-    const v2HasFunction = await verifyContract(v2Address, 'imite Module V2');
+    const imiteIPAddress = '0xDa5E551070dB21890Be1fa17721DD549D3b6Ed31';
+    const hasFunction = await verifyContract(imiteIPAddress, 'ImiteIP');
     console.log('\n' + '='.repeat(60));
     console.log('\n📊 SUMMARY:');
-    console.log(`V1 Contract (${v1Address.substring(0, 10)}...): ${v1HasFunction ? '✅ HAS registerIP' : '❌ NO registerIP'}`);
-    console.log(`V2 Contract (${v2Address.substring(0, 10)}...): ${v2HasFunction ? '✅ HAS registerIP' : '❌ NO registerIP'}`);
-    if (v2HasFunction) {
-        console.log('\n💡 RECOMMENDATION: Use V2 contract!');
-        console.log('   Update deployed_addresses.json to use V2 address');
-    }
-    else if (v1HasFunction) {
-        console.log('\n💡 RECOMMENDATION: V1 contract works, but V2 is preferred');
+    console.log(`ImiteIP (${imiteIPAddress.substring(0, 10)}...): ${hasFunction ? '✅ HAS registerIP' : '❌ NO registerIP'}`);
+    if (hasFunction) {
+        console.log('\n💡 ImiteIP contract is ready for use.');
     }
     else {
-        console.log('\n⚠️  WARNING: Neither contract has registerIP function');
+        console.log('\n⚠️  WARNING: ImiteIP contract does not have registerIP function');
         console.log('   You may need to deploy a new contract');
     }
 }

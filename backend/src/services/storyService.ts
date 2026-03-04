@@ -20,7 +20,7 @@ export interface IpMetadata {
     created_at?: string;
 }
 
-// ModredIP contract ABI (simplified for IP registration)
+// ImiteIP contract ABI (simplified for IP registration)
 const MODRED_IP_ABI = [
     {
         "inputs": [
@@ -169,7 +169,7 @@ export const registerIpWithFlow = async (
         console.log('metadata:', metadata);
         console.log('isEncrypted:', isEncrypted);
 
-        // Register IP on ModredIP contract
+        // Register IP on ImiteIP contract
         const { request } = await publicClient.simulateContract({
             address: modredIpContractAddress,
             abi: MODRED_IP_ABI,
