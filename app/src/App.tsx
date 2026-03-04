@@ -95,6 +95,9 @@ const flowTestnet = {
 // Backend API configuration
 const BACKEND_URL = "http://localhost:5000";
 
+// Logo and favicon: app/public/imite.png (served at /imite.png)
+const LOGO_SRC = "/imite.png";
+
 // File validation and preview utilities
 const MAX_FILE_SIZE_MB = 50; // Maximum file size in megabytes
 const ALLOWED_FILE_TYPES = [
@@ -3126,7 +3129,7 @@ export default function App({ thirdwebClient }: AppProps) {
         <header className="header">
           <div className="header-container">
             <div className="header-logo">
-              <img src="/imite.png" alt="imite" className="logo-image" />
+              <img src={LOGO_SRC} alt="imite" className="logo-image" />
               <h1>imite</h1>
             </div>
             <div className="header-actions">
@@ -3328,7 +3331,7 @@ export default function App({ thirdwebClient }: AppProps) {
       <header className="header">
         <div className="header-container">
           <div className="header-logo">
-            <img src="/imite.png" alt="imite" className="logo-image" />
+            <img src={LOGO_SRC} alt="imite" className="logo-image" />
             <h1>imite</h1>
           </div>
           <div className="header-actions">
