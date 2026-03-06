@@ -189,16 +189,25 @@ export async function getYakoaInfringementStatus(id: string) {
     });
 
     const tokenData = response.data;
+    const inNetwork = tokenData.infringements?.in_network_infringements || [];
+    const external = tokenData.infringements?.external_infringements || [];
+    const totalInfringements = inNetwork.length + external.length;
+
+    // result from Yakoa = "is this token an infringer?" (no_infringement = this IP is not copying others).
+    // totalInfringements = "how many assets are infringing ON this token?" (others copying this IP).
     const infringementStatus = {
       id: tokenData.id,
       status: tokenData.infringements?.status || 'unknown',
       result: tokenData.infringements?.result || 'unknown',
-      inNetworkInfringements: tokenData.infringements?.in_network_infringements || [],
-      externalInfringements: tokenData.infringements?.external_infringements || [],
+      inNetworkInfringements: inNetwork,
+      externalInfringements: external,
       credits: tokenData.infringements?.credits || {},
       lastChecked: tokenData.infringements?.last_checked || null,
-      totalInfringements: (tokenData.infringements?.in_network_infringements?.length || 0) + 
-                         (tokenData.infringements?.external_infringements?.length || 0)
+      totalInfringements,
+      // UI-friendly: true when others are infringing on this asset (use this for "X infringement(s) found")
+      hasInfringementsAgainstThisAsset: totalInfringements > 0,
+      // Short label for badges/tooltips: "clean" | "infringements_found"
+      displaySummary: totalInfringements > 0 ? 'infringements_found' as const : 'clean' as const,
     };
 
     console.log("✅ Yakoa Infringement Status:", infringementStatus);

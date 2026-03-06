@@ -1168,6 +1168,7 @@ export default function App({ thirdwebClient }: AppProps) {
   interface InfringementData {
     id: string;
     status: string;
+    /** Yakoa: "is this token an infringer?" (no_infringement = this IP is not copying others) */
     result: string;
     inNetworkInfringements: Array<{
       id?: string;
@@ -1175,6 +1176,8 @@ export default function App({ thirdwebClient }: AppProps) {
       similarity?: number;
       detected_at?: string;
       type?: string;
+      token?: string;
+      media?: unknown[];
     }>;
     externalInfringements: Array<{
       id?: string;
@@ -1189,7 +1192,12 @@ export default function App({ thirdwebClient }: AppProps) {
       remaining?: number;
     };
     lastChecked: string | null;
+    /** Total count of assets infringing ON this IP (in-network + external) */
     totalInfringements: number;
+    /** UI: true when others are infringing on this asset */
+    hasInfringementsAgainstThisAsset?: boolean;
+    /** UI: "clean" | "infringements_found" */
+    displaySummary?: 'clean' | 'infringements_found';
   }
 
   const [infringementData, setInfringementData] = useState<Map<number, InfringementData>>(new Map());
@@ -1239,9 +1247,13 @@ export default function App({ thirdwebClient }: AppProps) {
     }
   };
 
-  // Calculate infringement severity
+  // Whether others are infringing on this asset (use for display; backend sends hasInfringementsAgainstThisAsset)
+  const hasInfringementsAgainstAsset = (d: InfringementData) =>
+    d.hasInfringementsAgainstThisAsset ?? d.totalInfringements > 0;
+
+  // Calculate infringement severity (based on infringements AGAINST this asset)
   const calculateSeverity = (infringement: InfringementData): 'low' | 'medium' | 'high' | 'critical' => {
-    if (infringement.totalInfringements === 0) return 'low';
+    if (!hasInfringementsAgainstAsset(infringement)) return 'low';
     
     const hasHighSimilarity = [
       ...infringement.inNetworkInfringements,
@@ -4915,7 +4927,7 @@ export default function App({ thirdwebClient }: AppProps) {
                       {asset.isDisputed && <span className="badge badge-error">⚠️ Disputed</span>}
                       {infringementData.has(id) && (() => {
                         const infringement = infringementData.get(id)!;
-                        if (infringement.totalInfringements > 0) {
+                        if (hasInfringementsAgainstAsset(infringement)) {
                           const severity = calculateSeverity(infringement);
                           const severityConfig = {
                             medium: { icon: '⚡', className: 'badge-warning' },
@@ -4928,9 +4940,9 @@ export default function App({ thirdwebClient }: AppProps) {
                             <span 
                               className={`badge ${config.className}`}
                               style={{ cursor: 'default' }}
-                              title={`${infringement.totalInfringements} infringement(s) detected`}
+                              title={`${infringement.totalInfringements} infringement(s) against this IP (other asset(s) may be copying this work)`}
                             >
-                              {config.icon} {infringement.totalInfringements} Infringement{infringement.totalInfringements !== 1 ? 's' : ''}
+                              {config.icon} {infringement.totalInfringements} Infringement{infringement.totalInfringements !== 1 ? 's' : ''} against this IP
                             </span>
                           );
                         }
@@ -5009,7 +5021,7 @@ export default function App({ thirdwebClient }: AppProps) {
                         {infringementData.has(id) ? (() => {
                           const infringement = infringementData.get(id)!;
                           const severity = calculateSeverity(infringement);
-                          const hasInfringements = infringement.totalInfringements > 0;
+                          const hasInfringements = hasInfringementsAgainstAsset(infringement);
                           
                           const severityConfig = {
                             low: { icon: '✅', color: '#28a745', bg: '#d4edda' },
@@ -5019,6 +5031,9 @@ export default function App({ thirdwebClient }: AppProps) {
                           };
                           
                           const config = severityConfig[severity];
+                          const label = hasInfringements
+                            ? `${infringement.totalInfringements} against this IP`
+                            : 'Clean (none against this IP)';
                           
                           return (
                             <>
@@ -5035,8 +5050,9 @@ export default function App({ thirdwebClient }: AppProps) {
                                   alignItems: 'center',
                                   gap: '0.25rem'
                                 }}
+                                title={hasInfringements ? `${infringement.totalInfringements} other asset(s) may be infringing on this IP` : 'No infringements detected against this IP'}
                               >
-                                {config.icon} {hasInfringements ? `${infringement.totalInfringements} Found` : 'Clean'}
+                                {config.icon} {label}
                               </span>
                               <button
                                 onClick={() => {
