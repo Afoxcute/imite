@@ -1,6 +1,6 @@
 # 🚀 imite - Revolutionary IP Management Platform
 
-> **The Future of Intellectual Property Management on Blockchain**
+> **The Future of Intellectual Property Management on Flow Blockchain**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -14,9 +14,7 @@
 **Project Description**  
 imite is a decentralized intellectual property (IP) management platform built on Flow. Creators can register IP assets as token-bound accounts (ERC-6551), mint licenses with programmable terms and royalties, receive and distribute revenue on-chain, and resolve disputes through an arbitration system. The platform uses IPFS for storage, integrates AI-powered infringement detection, and offers transfer and gifting of IP assets with full on-chain provenance. Built for the creator economy, imite unifies registration, licensing, monetization, and protection in one dashboard with verifiable, transparent records.
 
-**Hackathon track:** Legacy Builders
 
-**Improvement:** Improving the frontend.
 
 **Tech stack**
 - **Frontend:** React 18, TypeScript, Vite, Thirdweb SDK, custom CSS (glassmorphism), React Context API
@@ -403,4 +401,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ by the imite Team**
 
-*Empowering creators to protect and monetize their intellectual property through blockchain technology.*
+*Empowering creators to protect and monetize their intellectual property through FLOW blockchain technology.*
